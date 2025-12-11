@@ -1,161 +1,136 @@
-import { useContext, useState } from 'react';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Link, useLocation, useNavigate } from 'react-router';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { AuthContext } from '../../context/AuthContext';
+import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from "react-router";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import { ToastContainer, toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import "react-toastify/dist/ReactToastify.css";
 
-const Login = () => {
+export default function Login() {
   const { signInUser, signInWithGoogle } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+
   const navigate = useNavigate();
   const location = useLocation();
+  const redirectTo = location.state?.from?.pathname || "/";
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm();
 
-  const from = location.state?.from?.pathname || '/';
-
-  const formatFirebaseError = (message) => {
-    const match = message.match(/\(auth\/([^)]+)\)/);
-    return match ? `auth/${match[1]}` : message;
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const email = e.target.email.value;
-    const password = e.target.password.value;
-
+  const onSubmit = async (data) => {
     try {
-      await signInUser(email, password);
-      toast.success('Login successful!', { autoClose: 1000 });
-      setError('');
+      const { email, password } = data;
 
-      setTimeout(() => {
-        navigate(from, { replace: true });
-      }, 1000);
+      await signInUser(email, password);
+      toast.success("Login successful!");
+
+      setTimeout(() => navigate(redirectTo, { replace: true }), 900);
+
+      reset();
     } catch (err) {
-      console.error(err);
-      const cleanError = formatFirebaseError(err.message);
-      setError(cleanError);
-      toast.error(cleanError, { autoClose: 2500 });
+      toast.error("Invalid email or password");
     }
   };
 
   const handleGoogle = async () => {
     try {
       await signInWithGoogle();
-      toast.success('Logged in with Google! Redirecting...', {
-        autoClose: 1500,
-      });
-      setError('');
-
-      setTimeout(() => {
-        navigate(from, { replace: true });
-      }, 1500);
+      toast.success("Logged in with Google!");
+      setTimeout(() => navigate(redirectTo, { replace: true }), 900);
     } catch (err) {
-      console.error(err);
-      const cleanError = formatFirebaseError(err.message);
-      setError(cleanError);
-      toast.error(cleanError, { autoClose: 2500 });
+      toast.error("Google login failed");
     }
   };
 
   return (
-    <div className='hero bg-base-200 min-h-screen'>
-      <div className='hero-content flex-col lg:flex-row-reverse gap-20 mx-auto'>
-        {/* Left side text */}
-        <div className='text-center lg:text-left'>
-          <h1 className='text-5xl font-bold text-accent'>Login now!</h1>
-          <p className='py-6 max-w-md text-gray-600'>
-            Access your account to explore and manage your crops effortlessly.
-            Stay connected, grow smarter, and keep track of your agri-business.
+    <div className="hero min-h-screen bg-base-200">
+      <div className="hero-content flex-col lg:flex-row-reverse gap-20">
+        <div className="text-center lg:text-left">
+          <h1 className="text-5xl font-bold text-accent">Login now!</h1>
+          <p className="py-6 max-w-md text-gray-600">
+            Access your dashboard, manage bookings, and more.
           </p>
         </div>
 
-        {/* Login card */}
-        <div className='card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl'>
-          <form onSubmit={handleLogin} className='card-body'>
-            <fieldset className='fieldset space-y-3'>
-              <label className='label font-semibold'>Email</label>
+        <div className="card bg-base-100 shadow-xl w-full max-w-sm">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="card-body space-y-3"
+          >
+            {/* Email */}
+            <div>
+              <label className="label font-semibold">Email</label>
               <input
-                name='email'
-                type='email'
-                placeholder='Email'
-                className='input input-bordered w-full'
-                required
+                type="email"
+                className="input input-bordered w-full"
+                {...register("email", { required: "Email required" })}
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
+              )}
+            </div>
 
-              <label className='label font-semibold'>Password</label>
-              <div className='relative'>
+            {/* Password */}
+            <div>
+              <label className="label font-semibold">Password</label>
+              <div className="relative">
                 <input
-                  name='password'
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder='Password'
-                  className='input input-bordered w-full pr-10 focus:pr-10 relative z-0'
-                  required
+                  type={showPassword ? "text" : "password"}
+                  className="input input-bordered w-full pr-10"
+                  {...register("password", { required: "Password required" })}
                 />
+
                 <button
-                  type='button'
-                  onClick={togglePasswordVisibility}
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10'
-                  tabIndex={-1}
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
 
-              <div>
-                <a className='link link-hover text-sm text-primary'>
-                  Forgot password?
-                </a>
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <p className='text-red-500 text-sm font-medium text-center bg-red-50 border border-red-200 rounded-md py-2'>
-                  {error}
-                </p>
+              {errors.password && (
+                <p className="text-red-500 text-sm">{errors.password.message}</p>
               )}
+            </div>
 
-              <button
-                type='submit'
-                className='btn btn-accent btn-outline w-full mt-2'
-              >
-                Login
-              </button>
+            {/* Submit */}
+            <button
+              className="btn btn-accent w-full"
+              disabled={isSubmitting}
+              type="submit"
+            >
+              {isSubmitting ? "Signing in..." : "Login"}
+            </button>
 
-              <button
-                type='button'
-                onClick={handleGoogle}
-                className='btn btn-outline btn-secondary w-full mt-2 flex items-center justify-center'
-              >
-                <img
-                  src='https://www.svgrepo.com/show/475656/google-color.svg'
-                  alt='Google'
-                  className='w-5 h-5 mr-2'
-                />
-                Login with Google
-              </button>
+            {/* Google */}
+            <button
+              type="button"
+              onClick={handleGoogle}
+              className="btn btn-outline btn-secondary w-full"
+            >
+              <img
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                className="w-5 h-5 mr-2"
+              />
+              Continue with Google
+            </button>
 
-              <p className='text-center text-sm mt-4'>
-                Not a user yet?{' '}
-                <Link
-                  to='/register'
-                  className='link link-primary font-semibold'
-                >
-                  Register now
-                </Link>
-              </p>
-            </fieldset>
+            <p className="text-center text-sm mt-3">
+              Not a user?{" "}
+              <Link to="/register" className="link link-primary">
+                Register
+              </Link>
+            </p>
           </form>
         </div>
       </div>
-      <ToastContainer position='top-center' theme='colored' />
+
+      <ToastContainer position="top-center" theme="colored" />
     </div>
   );
-};
-
-export default Login;
+}

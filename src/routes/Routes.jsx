@@ -19,6 +19,9 @@ import ServicesList from '../pages/Services/ServiceList';
 import AdminRoute from './AdminRoute';
 import DecoratorRoute from './DecoratorRoute';
 import PrivateRoute from './PrivateRoute';
+import PaymentHistory from '../dashboard/user/PaymentHistory';
+import Analytics from '../dashboard/admin/Analytics';
+import Revenue from '../dashboard/admin/Revenue';
 
 export const router = createBrowserRouter([
   {
@@ -47,6 +50,7 @@ export const router = createBrowserRouter([
 
       // user
       { path: 'my-bookings', element: <MyBookings /> },
+      { path: 'payment-history', element: <PaymentHistory /> },
 
       // ───────────────────────────────
       // ADMIN ROUTES
@@ -59,6 +63,24 @@ export const router = createBrowserRouter([
           </AdminRoute>
         ),
       },
+      {
+  path: 'admin/analytics',
+  element: (
+    <AdminRoute>
+      <Analytics />
+    </AdminRoute>
+  ),
+},
+{
+  path: 'admin/revenue',
+  element: (
+    <AdminRoute>
+      <Revenue />
+    </AdminRoute>
+  ),
+},
+
+
       {
         path: 'admin/manage-bookings',
         element: (

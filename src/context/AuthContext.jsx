@@ -1,3 +1,4 @@
+// src/context/AuthContext.jsx
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
@@ -8,109 +9,126 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { createContext, useEffect, useState } from 'react';
-import { saveUserToDB } from '../api/userAPI';
 import { auth } from '../firebase/firebase.init';
+import axios from '../api/axios';
 
 export const AuthContext = createContext(null);
 
 const googleProvider = new GoogleAuthProvider();
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState(null);
 
-  // Upload image to ImageBB
   const uploadImageToImageBB = async (file) => {
     const formData = new FormData();
     formData.append('image', file);
 
     const res = await fetch(
       `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`,
-      {
-        method: 'POST',
-        body: formData,
-      }
+      { method: 'POST', body: formData }
     );
 
     const data = await res.json();
     return data.data.url;
   };
 
-  // REGISTER
+  
+
   const createUser = async ({ name, email, password, photoFile }) => {
     setLoading(true);
-
     const result = await createUserWithEmailAndPassword(auth, email, password);
 
     let photoURL = '';
-
     if (photoFile) {
       photoURL = await uploadImageToImageBB(photoFile);
-      await updateProfile(auth.currentUser, { displayName: name, photoURL });
-    } else {
-      await updateProfile(auth.currentUser, { displayName: name });
     }
 
-    await saveUserToDB({
-      name,
+    await updateProfile(auth.currentUser, { displayName: name, photoURL });
+
+    const role = email === ADMIN_EMAIL ? 'admin' : 'user';
+    await axios.post('/users', {
       email,
-      photo: photoURL,
+      displayName: name,
+      photoURL,
+      role,
     });
 
     return result;
   };
 
-  // LOGIN
   const signInUser = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // GOOGLE LOGIN
   const signInWithGoogle = async () => {
-    setLoading(true);
-    const result = await signInWithPopup(auth, googleProvider);
+  setLoading(true);
+  const result = await signInWithPopup(auth, googleProvider);
+  const { email, displayName, photoURL } = result.user;
 
-    await saveUserToDB({
-      name: result.user.displayName,
-      email: result.user.email,
-      photo: result.user.photoURL,
+  try {
+    await axios.post("/users", {
+      email,
+      displayName,
+      photoURL,
     });
+  } catch (err) {
+    // ignore if user exists
+  }
 
-    return result;
-  };
+  return result;
+};
 
-  // LOGOUT
+
   const logOut = () => {
     setLoading(true);
     return signOut(auth);
   };
 
-  // AUTH LISTENER
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-
-      if (currentUser?.email) {
-        try {
-          const res = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/users/${currentUser.email}`
-          );
-          const data = await res.json();
-          setRole(data.role || 'user'); // default user role
-        } catch (err) {
-          console.error('Failed to get role:', err);
-        }
-      } else {
-        setRole(null);
-      }
-
+  const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    if (!firebaseUser) {
+      setUser(null);
+      setRole(null);
       setLoading(false);
-    });
+      return;
+    }
 
-    return () => unsubscribe();
-  }, []);
+    try {
+      
+      const idToken = await firebaseUser.getIdToken();
+
+      
+      const res = await axios.get("/auth/me", {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
+
+      
+      setUser({
+        email: res.data.email,
+        displayName: res.data.displayName,
+        photoURL: res.data.photoURL,
+      });
+
+      
+      setRole(res.data.role);
+    } catch (err) {
+      console.error("Error fetching user:", err);
+      setRole("user"); 
+    }
+
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, []);
+
+
 
   const authInfo = {
     user,
