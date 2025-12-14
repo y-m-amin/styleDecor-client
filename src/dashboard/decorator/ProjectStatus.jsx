@@ -6,15 +6,18 @@ const ProjectStatus = () => {
   const { state: project } = useLocation();
   const navigate = useNavigate();
 
+  console.log("PROJECT:", project);
+
+
   const [status, setStatus] = useState(project?.status || 'assigned');
   const [saving, setSaving] = useState(false);
 
   const updateStatus = async () => {
     setSaving(true);
     try {
-      await axios.patch(`/decorator/bookings/${project.id}/status`, {
-        status,
-      });
+      await axios.patch(`/decorator/bookings/${project._id}/status`, {
+  status,
+});
       navigate('/dashboard/decorator/projects');
     } catch (err) {
       console.error('Failed to update', err);

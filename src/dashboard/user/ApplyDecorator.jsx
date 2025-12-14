@@ -38,9 +38,11 @@ export default function ApplyDecorator() {
   const onSubmit = async (data) => {
     try {
       await axios.post('/decorators/apply', {
-        ...data,
-        email: user.email,
-      });
+          experience: data.experience,
+          specialties: data.specialties,
+          portfolio: data.portfolio,
+        });
+
 
       toast.success('Application submitted!');
       await refreshUser(); // 🔥 instant status update

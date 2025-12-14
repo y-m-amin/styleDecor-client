@@ -23,6 +23,8 @@ import ServicesList from '../pages/Services/ServiceList';
 import AdminRoute from './AdminRoute';
 import DecoratorRoute from './DecoratorRoute';
 import PrivateRoute from './PrivateRoute';
+import PaymentSuccess from '../pages/Payment/PaymentSuccess';
+import PaymentCancelled from '../pages/Payment/PaymentCancelled';
 
 export const router = createBrowserRouter([
   {
@@ -32,10 +34,14 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <Home /> },
       { path: '/services', element: <ServicesList /> },
-      { path: '/services/:id', element: <ServiceDetails /> },
+      
+      
+      { path: '/services/:id', element:<PrivateRoute><ServiceDetails /></PrivateRoute>  },
       { path: '/map', element: <ServiceCoverageMap /> },
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },
+      
+
     ],
   },
 
@@ -60,6 +66,15 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      {
+  path: "/dashboard/payment-success",
+  element: <PaymentSuccess />,
+},
+{
+  path: "/dashboard/payment-cancelled",
+  element: <PaymentCancelled />,
+},
+
 
       // ───────────────────────────────
       // ADMIN ROUTES

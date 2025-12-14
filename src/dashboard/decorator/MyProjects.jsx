@@ -32,8 +32,8 @@ const MyProjects = () => {
       <div className='grid md:grid-cols-2 gap-4'>
         {projects.map((p) => (
           <div
-            key={p.id}
-            className='bg-white shadow rounded-lg p-4 border border-gray-100'
+            key={p._id}
+            className='bg-base-200 shadow rounded-lg p-4 border border-gray-500'
           >
             <h3 className='text-xl font-semibold'>{p.service.name}</h3>
 
@@ -66,12 +66,12 @@ const MyProjects = () => {
             </span>
 
             <Link
-              to='/dashboard/decorator/project-status'
-              state={p}
-              className='block mt-4 text-blue-600 hover:underline'
-            >
-              Update Status →
-            </Link>
+  to='/dashboard/decorator/project-status'
+  state={p}
+  className='block mt-4 text-blue-600 hover:underline'
+>
+  Update Status →
+</Link>
           </div>
         ))}
       </div>

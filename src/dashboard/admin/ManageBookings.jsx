@@ -63,7 +63,7 @@ export default function ManageBookings() {
   const updateStatus = async (bookingId, newStatus) => {
     setStatusSaving(true);
     try {
-      await axios.patch(`/bookings/${bookingId}`, { status: newStatus });
+      await axios.patch(`/admin/bookings/${bookingId}/status`, { status: newStatus });
       fetchBookings();
     } catch (err) {
       console.error('Failed to update status:', err);
