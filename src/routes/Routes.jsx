@@ -6,9 +6,9 @@ import ManageDecorators from '../dashboard/admin/ManageDecorators';
 import ManageServices from '../dashboard/admin/ManageServices';
 import Revenue from '../dashboard/admin/Revenue';
 import DashboardLayout from '../dashboard/DashboardLayout';
+import DecoratorProfile from '../dashboard/decorator/DecoratorProfile';
 import MyProjects from '../dashboard/decorator/MyProjects';
-import ProjectStatus from '../dashboard/decorator/ProjectStatus';
-import TodaySchedule from '../dashboard/decorator/TodaySchedule';
+import MySchedule from '../dashboard/decorator/MySchedule';
 import ApplyDecorator from '../dashboard/user/ApplyDecorator';
 import MyBookings from '../dashboard/user/MyBookings';
 import MyProfile from '../dashboard/user/MyProfile';
@@ -18,13 +18,13 @@ import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
 import Home from '../pages/Home/Home';
 import ServiceCoverageMap from '../pages/Map/ServiceCoverageMap';
+import PaymentCancelled from '../pages/Payment/PaymentCancelled';
+import PaymentSuccess from '../pages/Payment/PaymentSuccess';
 import ServiceDetails from '../pages/Services/ServiceDetails';
 import ServicesList from '../pages/Services/ServiceList';
 import AdminRoute from './AdminRoute';
 import DecoratorRoute from './DecoratorRoute';
 import PrivateRoute from './PrivateRoute';
-import PaymentSuccess from '../pages/Payment/PaymentSuccess';
-import PaymentCancelled from '../pages/Payment/PaymentCancelled';
 
 export const router = createBrowserRouter([
   {
@@ -34,14 +34,18 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <Home /> },
       { path: '/services', element: <ServicesList /> },
-      
-      
-      { path: '/services/:id', element:<PrivateRoute><ServiceDetails /></PrivateRoute>  },
+
+      {
+        path: '/services/:id',
+        element: (
+          <PrivateRoute>
+            <ServiceDetails />
+          </PrivateRoute>
+        ),
+      },
       { path: '/map', element: <ServiceCoverageMap /> },
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },
-      
-
     ],
   },
 
@@ -67,14 +71,13 @@ export const router = createBrowserRouter([
         ),
       },
       {
-  path: "/dashboard/payment-success",
-  element: <PaymentSuccess />,
-},
-{
-  path: "/dashboard/payment-cancelled",
-  element: <PaymentCancelled />,
-},
-
+        path: '/dashboard/payment-success',
+        element: <PaymentSuccess />,
+      },
+      {
+        path: '/dashboard/payment-cancelled',
+        element: <PaymentCancelled />,
+      },
 
       // ───────────────────────────────
       // ADMIN ROUTES
@@ -132,18 +135,18 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'decorator/project-status',
+        path: 'decorator/My-profile',
         element: (
           <DecoratorRoute>
-            <ProjectStatus />
+            <DecoratorProfile />
           </DecoratorRoute>
         ),
       },
       {
-        path: 'decorator/today',
+        path: 'decorator/schedule',
         element: (
           <DecoratorRoute>
-            <TodaySchedule />
+            <MySchedule />
           </DecoratorRoute>
         ),
       },

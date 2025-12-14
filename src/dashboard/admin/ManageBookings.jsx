@@ -2,6 +2,23 @@ import { useEffect, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import axios from '../../api/axios';
 
+const STATUS_STYLES = {
+  pending: 'badge-warning',
+  assigned: 'badge-info',
+  planning_phase: 'badge-secondary',
+  materials_prepared: 'badge-accent',
+  on_the_way: 'badge-primary',
+  setup_in_progress: 'badge-neutral',
+  completed: 'badge-success',
+  cancelled: 'badge-error',
+};
+
+const PAYMENT_STYLES = {
+  unpaid: 'badge-error',
+  initiated: 'badge-warning',
+  paid: 'badge-success',
+};
+
 export default function ManageBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +80,9 @@ export default function ManageBookings() {
   const updateStatus = async (bookingId, newStatus) => {
     setStatusSaving(true);
     try {
-      await axios.patch(`/admin/bookings/${bookingId}/status`, { status: newStatus });
+      await axios.patch(`/admin/bookings/${bookingId}/status`, {
+        status: newStatus,
+      });
       fetchBookings();
     } catch (err) {
       console.error('Failed to update status:', err);
@@ -141,6 +160,7 @@ export default function ManageBookings() {
                 <th>Service</th>
                 <th>Date</th>
                 <th>Status</th>
+                <th>Payment</th>
                 <th>Decorators</th>
                 <th>Actions</th>
               </tr>
@@ -159,32 +179,28 @@ export default function ManageBookings() {
                       {b.customer?.email || b.userEmail}
                     </a>
                   </td>
-                  <td>{b.service?.service_name || '-'}</td>
+                  <td>{b.serviceSnapshot?.service_name || '—'}</td>
                   <td>{new Date(b.bookingDate).toLocaleDateString()}</td>
-
                   {/* Status dropdown */}
                   <td>
-                    <select
-                      className='select select-sm'
-                      value={b.status}
-                      onChange={(e) => updateStatus(b._id, e.target.value)}
-                      disabled={statusSaving}
+                    <span
+                      className={`badge ${
+                        STATUS_STYLES[b.status] || 'badge-outline'
+                      }`}
                     >
-                      <option value='pending'>pending</option>
-                      <option value='assigned'>assigned</option>
-                      <option value='planning_phase'>planning_phase</option>
-                      <option value='materials_prepared'>
-                        materials_prepared
-                      </option>
-                      <option value='on_the_way'>on_the_way</option>
-                      <option value='setup_in_progress'>
-                        setup_in_progress
-                      </option>
-                      <option value='completed'>completed</option>
-                      <option value='cancelled'>cancelled</option>
-                    </select>
+                      {b.status.replaceAll('_', ' ')}
+                    </span>
                   </td>
-
+                  <td>
+                    <span
+                      className={`badge ${
+                        PAYMENT_STYLES[b.payment?.paymentStatus] ||
+                        'badge-outline'
+                      }`}
+                    >
+                      {b.payment?.paymentStatus || 'unknown'}
+                    </span>
+                  </td>
                   {/* Decorators list */}
                   <td>
                     {b.assignedDecorators?.length > 0
@@ -193,12 +209,20 @@ export default function ManageBookings() {
                           .join(', ')
                       : '—'}
                   </td>
-
                   {/* Actions */}
+
                   <td>
                     <button
-                      className='btn btn-sm btn-info mr-2'
-                      onClick={() => openAssignModal(b)}
+                      className={`btn btn-sm ${
+                        b.payment?.paymentStatus === 'paid'
+                          ? 'btn-info'
+                          : 'bg-gray-400 cursor-not-allowed'
+                      }`}
+                      disabled={!b.payment?.paymentStatus === 'paid'}
+                      onClick={() =>
+                        b.payment?.paymentStatus === 'paid' &&
+                        openAssignModal(b)
+                      }
                     >
                       Assign
                     </button>

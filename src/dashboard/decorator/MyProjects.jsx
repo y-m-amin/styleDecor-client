@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react';
-import { FaMapMarkerAlt } from 'react-icons/fa';
 import Skeleton from 'react-loading-skeleton';
-import { Link } from 'react-router';
 import axios from '../../api/axios';
 
-const MyProjects = () => {
+const STATUS_FLOW = [
+  'assigned',
+  'planning_phase',
+  'materials_prepared',
+  'on_the_way',
+  'setup_in_progress',
+  'completed',
+];
+
+export default function MyProjects() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [savingId, setSavingId] = useState(null);
 
   const fetchProjects = async () => {
     try {
       const res = await axios.get('/decorator/bookings');
-      setProjects(res.data.bookings);
+      setProjects(res.data.bookings || []);
     } catch (err) {
-      console.error('Failed fetching projects', err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -23,7 +31,21 @@ const MyProjects = () => {
     fetchProjects();
   }, []);
 
-  if (loading) return <Skeleton count={5} height={130} />;
+  const updateStatus = async (id, status) => {
+    setSavingId(id);
+    try {
+      await axios.patch(`/decorator/bookings/${id}/status`, { status });
+      setProjects((prev) =>
+        prev.map((p) => (p._id === id ? { ...p, status } : p))
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  if (loading) return <Skeleton count={5} height={120} />;
 
   return (
     <div className='p-5'>
@@ -31,52 +53,38 @@ const MyProjects = () => {
 
       <div className='grid md:grid-cols-2 gap-4'>
         {projects.map((p) => (
-          <div
-            key={p._id}
-            className='bg-base-200 shadow rounded-lg p-4 border border-gray-500'
-          >
-            <h3 className='text-xl font-semibold'>{p.service.name}</h3>
+          <div key={p._id} className='bg-base-200 p-4 rounded-lg shadow'>
+            <h3 className='text-lg font-semibold'>
+              {p.serviceSnapshot?.service_name || p.service?.name}
+            </h3>
 
-            <p className='text-sm text-gray-500'>Booking ID: {p.bookingRef}</p>
-
-            <div className='flex items-center gap-2 mt-2 text-gray-600'>
-  <FaMapMarkerAlt />
-  {typeof p.location === 'object'
-    ? `${p.location.city ?? ''}, ${p.location.country ?? ''}`
-    : p.location || 'N/A'}
-</div>
+            <p className='text-sm text-gray-500'>#{p.bookingRef}</p>
 
             <p className='mt-2'>
-              <span className='font-semibold'>Event Date:</span>{' '}
-              {new Date(p.bookingDate).toLocaleDateString()}
+              <b>Date:</b> {new Date(p.bookingDate).toLocaleDateString()}
             </p>
 
-            <span
-              className={`inline-block mt-3 px-3 py-1 rounded text-sm ${
-                p.status === 'pending'
-                  ? 'bg-yellow-200 text-yellow-700'
-                  : p.status === 'assigned'
-                  ? 'bg-blue-200 text-blue-700'
-                  : p.status === 'completed'
-                  ? 'bg-green-200 text-green-700'
-                  : 'bg-gray-200 text-gray-700'
-              }`}
-            >
-              {p.status.replace(/_/g, ' ')}
-            </span>
+            <p className='text-gray-600'>
+              {typeof p.location === 'object'
+                ? `${p.location.city}, ${p.location.country}`
+                : p.location}
+            </p>
 
-            <Link
-  to='/dashboard/decorator/project-status'
-  state={p}
-  className='block mt-4 text-blue-600 hover:underline'
->
-  Update Status →
-</Link>
+            <select
+              className='select select-sm select-bordered mt-3 w-full'
+              value={p.status}
+              disabled={savingId === p._id || p.status === 'completed'}
+              onChange={(e) => updateStatus(p._id, e.target.value)}
+            >
+              {STATUS_FLOW.map((s) => (
+                <option key={s} value={s}>
+                  {s.replace(/_/g, ' ')}
+                </option>
+              ))}
+            </select>
           </div>
         ))}
       </div>
     </div>
   );
-};
-
-export default MyProjects;
+}

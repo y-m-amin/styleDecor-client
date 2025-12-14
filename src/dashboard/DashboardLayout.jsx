@@ -72,10 +72,8 @@ export default function DashboardLayout() {
               <h3 className='text-sm uppercase text-gray-400'>Decorator</h3>
 
               <Link to='/dashboard/decorator/projects'>My Projects</Link>
-              <Link to='/dashboard/decorator/project-status'>
-                Project Status
-              </Link>
-              <Link to='/dashboard/decorator/today'>Today’s Schedule</Link>
+              <Link to='/dashboard/decorator/my-profile'>My Profile</Link>
+              <Link to='/dashboard/decorator/schedule'>ProjectSchedule</Link>
             </div>
           )}
         </aside>
