@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 
 export default function ServiceCard({ service }) {
   return (
-    <div className='bg-white rounded-lg shadow overflow-hidden'>
+    <div className='bg-base-300 rounded-lg shadow-md shadow-secondary hover:shadow-secondary-content  overflow-hidden'>
       <div className='h-44 bg-gray-100 flex items-center justify-center'>
         <img
           src={service.image || '/placeholder-service.jpg'}

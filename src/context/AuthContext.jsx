@@ -9,8 +9,8 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { createContext, useEffect, useState } from 'react';
-import { auth } from '../firebase/firebase.init';
 import axios from '../api/axios';
+import { auth } from '../firebase/firebase.init';
 
 export const AuthContext = createContext(null);
 
@@ -21,6 +21,31 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState(null);
+  const [decoratorStatus, setDecoratorStatus] = useState(null);
+
+  const fetchMe = async (firebaseUser) => {
+    try {
+      const idToken = await firebaseUser.getIdToken();
+
+      const res = await axios.get('/auth/me', {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
+
+      setUser({
+        email: res.data.email,
+        displayName: res.data.displayName,
+        photoURL: res.data.photoURL,
+      });
+
+      setRole(res.data.role);
+      setDecoratorStatus(res.data.decoratorStatus);
+    } catch (err) {
+      console.error('Error fetching user:', err);
+      setRole('user');
+    }
+  };
 
   const uploadImageToImageBB = async (file) => {
     const formData = new FormData();
@@ -34,8 +59,6 @@ const AuthProvider = ({ children }) => {
     const data = await res.json();
     return data.data.url;
   };
-
-  
 
   const createUser = async ({ name, email, password, photoFile }) => {
     setLoading(true);
@@ -65,23 +88,22 @@ const AuthProvider = ({ children }) => {
   };
 
   const signInWithGoogle = async () => {
-  setLoading(true);
-  const result = await signInWithPopup(auth, googleProvider);
-  const { email, displayName, photoURL } = result.user;
+    setLoading(true);
+    const result = await signInWithPopup(auth, googleProvider);
+    const { email, displayName, photoURL } = result.user;
 
-  try {
-    await axios.post("/users", {
-      email,
-      displayName,
-      photoURL,
-    });
-  } catch (err) {
-    // ignore if user exists
-  }
+    try {
+      await axios.post('/users', {
+        email,
+        displayName,
+        photoURL,
+      });
+    } catch (err) {
+      // ignore if user exists
+    }
 
-  return result;
-};
-
+    return result;
+  };
 
   const logOut = () => {
     setLoading(true);
@@ -89,55 +111,40 @@ const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-    if (!firebaseUser) {
-      setUser(null);
-      setRole(null);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        setUser(null);
+        setRole(null);
+        setDecoratorStatus(null);
+        setLoading(false);
+        return;
+      }
+
+      await fetchMe(firebaseUser);
       setLoading(false);
-      return;
-    }
+    });
 
-    try {
-      
-      const idToken = await firebaseUser.getIdToken();
+    return () => unsubscribe();
+  }, []);
 
-      
-      const res = await axios.get("/auth/me", {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      });
-
-      
-      setUser({
-        email: res.data.email,
-        displayName: res.data.displayName,
-        photoURL: res.data.photoURL,
-      });
-
-      
-      setRole(res.data.role);
-    } catch (err) {
-      console.error("Error fetching user:", err);
-      setRole("user"); 
-    }
-
+  const refreshUser = async () => {
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser) return;
+    setLoading(true);
+    await fetchMe(firebaseUser);
     setLoading(false);
-  });
-
-  return () => unsubscribe();
-}, []);
-
-
+  };
 
   const authInfo = {
     user,
     role,
+    decoratorStatus,
     loading,
     createUser,
     signInUser,
     signInWithGoogle,
     logOut,
+    refreshUser,
   };
 
   return (

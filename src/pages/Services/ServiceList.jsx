@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
 import ServiceCard from '../../components/ServiceCard';
 import SkeletonCard from '../../components/SkeletonCard';
