@@ -4,12 +4,15 @@ import MapComponent from '../../components/MapComponent';
 import ServiceCard from '../../components/ServiceCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import { AuthContext } from '../../context/AuthContext';
+import { Link, Navigate, useNavigate } from "react-router";
+import { motion } from "framer-motion";
 import Hero from './Hero';
 
 export default function Home() {
   const [services, setServices] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [decorators, setDecorators] = useState([]);
 
   // search / filter state
   const [q, setQ] = useState('');
@@ -18,6 +21,20 @@ export default function Home() {
   const [maxCost, setMaxCost] = useState('');
 
   const { user } = useContext(AuthContext) || {};
+
+  let navigate = useNavigate();
+
+  useEffect(() => {
+  const fetchTopDecorators = async () => {
+    try {
+      const res = await axios.get("/decorators/top?limit=6");
+      setDecorators(res.data.decorators || []);
+    } catch (err) {
+      console.error("Failed to load decorators", err);
+    }
+  };
+  fetchTopDecorators();
+}, []);
 
   useEffect(() => {
     let mounted = true;
@@ -164,28 +181,42 @@ export default function Home() {
         )}
       </section>
 
-      <section className=' py-10'>
-        <div className='container mx-auto px-4'>
-          <h3 className='text-xl font-semibold mb-4'>Top Decorators</h3>
-          <div className='grid grid-cols-2 md:grid-cols-6 gap-4'>
-            {topDecorators.length === 0 ? (
-              <div className='text-gray-500'>No decorators yet.</div>
-            ) : (
-              topDecorators.map((d) => (
-                <div key={d.email} className=' p-4 rounded shadow text-center'>
-                  <div className='w-14 h-14 rounded-full bg-indigo-100 mx-auto flex items-center justify-center text-indigo-600 font-semibold'>
-                    {d.email.charAt(0).toUpperCase()}
-                  </div>
-                  <div className='mt-2 text-sm font-medium'>{d.email}</div>
-                  <div className='text-xs text-gray-500'>
-                    {d.count} packages
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+      <section className="py-10">
+  <div className="container mx-auto px-4">
+    <h3 className="text-xl font-semibold mb-4">Top Decorators</h3>
+    {decorators.length === 0 ? (
+      <p className="text-gray-500">No decorators yet.</p>
+    ) : (
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        {decorators.map((d) => (
+          <motion.div
+            key={d._id}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="bg-base-300 p-4 rounded-lg shadow cursor-pointer"
+            onClick={() => navigate(`/decorators/${d._id}`)}
+          >
+            <div className="flex flex-col items-center text-center">
+              <img
+                src={d.photoURL}
+                alt={d.displayName}
+                className="w-20 h-20 rounded-full object-cover"
+              />
+              <div className="mt-2 font-semibold">{d.displayName}</div>
+              <div className="text-xs text-gray-500 my-1">
+                Rating: {d.rating ?? "N/A"}
+              </div>
+              <div className="text-xs text-gray600">
+                {d.specialties?.join(", ") || "No specialties"}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    )}
+  </div>
+</section>
 
       <section className='container mx-auto px-4 py-10'>
         <h3 className='text-xl font-semibold mb-4'>Service Coverage Map</h3>

@@ -121,7 +121,7 @@ const MyBookings = () => {
                   (b.payment?.paymentStatus === 'unpaid' ||
                     b.payment?.paymentStatus === 'initiated') && (
                     <button
-                      className='btn btn-primary'
+                      className='btn btn-sm btn-primary'
                       onClick={() => handlePay(b._id)}
                     >
                       Pay Now

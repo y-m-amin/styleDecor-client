@@ -25,6 +25,7 @@ import ServicesList from '../pages/Services/ServiceList';
 import AdminRoute from './AdminRoute';
 import DecoratorRoute from './DecoratorRoute';
 import PrivateRoute from './PrivateRoute';
+import DecoratorProfilePub from '../pages/Decorator/DecoratorProfilePub';
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
       { path: '/map', element: <ServiceCoverageMap /> },
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },
+      {path:'/decorators/:id', element:<DecoratorProfilePub />},
     ],
   },
 

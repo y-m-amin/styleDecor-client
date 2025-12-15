@@ -43,7 +43,7 @@ export default function ManageBookings() {
       });
 
       setBookings(res.data.bookings || res.data);
-      setTotalPages(res.data.totalPages || 1); // adapt if backend gives different field
+      setTotalPages(res.data.totalPages || 1); 
     } catch (err) {
       console.error('Failed loading bookings', err);
     } finally {
@@ -59,7 +59,7 @@ export default function ManageBookings() {
   const fetchDecorators = async () => {
     try {
       const res = await axios.get('/decorators/top', {
-        params: { limit: 100 },
+        params: { limit: 50 },
       });
       setDecorators(res.data.decorators || res.data);
     } catch (err) {
