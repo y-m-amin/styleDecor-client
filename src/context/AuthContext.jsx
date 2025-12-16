@@ -25,13 +25,15 @@ const AuthProvider = ({ children }) => {
 
   const fetchMe = async (firebaseUser) => {
     try {
-      const idToken = await firebaseUser.getIdToken();
-
-      const res = await axios.get('/auth/me', {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
+      // Get JWT from backend
+      const jwtRes = await axios.post('/jwt', {
+        email: firebaseUser.email,
       });
+
+      localStorage.setItem('access-token', jwtRes.data.token);
+
+      //  m                       Fetch user info using JWT
+      const res = await axios.get('/auth/me');
 
       setUser({
         email: res.data.email,
@@ -43,7 +45,9 @@ const AuthProvider = ({ children }) => {
       setDecoratorStatus(res.data.decoratorStatus);
     } catch (err) {
       console.error('Error fetching user:', err);
-      setRole('user');
+      setUser(null);
+      setRole(null);
+      setDecoratorStatus(null);
     }
   };
 
@@ -106,6 +110,7 @@ const AuthProvider = ({ children }) => {
   };
 
   const logOut = () => {
+    localStorage.removeItem('access-token');
     setLoading(true);
     return signOut(auth);
   };
