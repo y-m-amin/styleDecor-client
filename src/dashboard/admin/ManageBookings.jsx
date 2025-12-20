@@ -43,7 +43,7 @@ export default function ManageBookings() {
       });
 
       setBookings(res.data.bookings || res.data);
-      setTotalPages(res.data.totalPages || 1); 
+      setTotalPages(res.data.totalPages || 1);
     } catch (err) {
       console.error('Failed loading bookings', err);
     } finally {
@@ -151,87 +151,163 @@ export default function ManageBookings() {
       ) : filtered.length === 0 ? (
         <p className='text-gray-600'>No bookings found.</p>
       ) : (
-        <div className='overflow-x-auto'>
-          <table className='table table-zebra w-full'>
-            <thead>
-              <tr>
-                <th>Booking Ref</th>
-                <th>User Email</th>
-                <th>Service</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Payment</th>
-                <th>Decorators</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+        <>
+          {/* ===== MOBILE / TABLET VIEW ===== */}
+          <div className='space-y-4 lg:hidden'>
+            {filtered.map((b) => (
+              <div
+                key={b._id}
+                className='card bg-base-100 shadow-md p-4 space-y-2'
+              >
+                <div className='flex justify-between items-start'>
+                  <div>
+                    <p className='font-semibold'>{b.bookingRef}</p>
+                    <p className='text-sm opacity-70'>
+                      {new Date(b.bookingDate).toLocaleDateString()}
+                    </p>
+                  </div>
 
-            <tbody>
-              {filtered.map((b) => (
-                <tr key={b._id}>
-                  {/* Email mailto */}
-                  <td>{b.bookingRef}</td>
-                  <td>
+                  <span
+                    className={`badge ${
+                      STATUS_STYLES[b.status] || 'badge-outline'
+                    }`}
+                  >
+                    {b.status.replaceAll('_', ' ')}
+                  </span>
+                </div>
+
+                <div className='text-sm'>
+                  <p>
+                    <span className='font-medium'>User:</span>{' '}
                     <a
                       href={`mailto:${b.customer?.email || b.userEmail}`}
                       className='text-blue-600 underline'
                     >
                       {b.customer?.email || b.userEmail}
                     </a>
-                  </td>
-                  <td>{b.serviceSnapshot?.service_name || '—'}</td>
-                  <td>{new Date(b.bookingDate).toLocaleDateString()}</td>
-                  {/* Status dropdown */}
-                  <td>
-                    <span
-                      className={`badge ${
-                        STATUS_STYLES[b.status] || 'badge-outline'
-                      }`}
-                    >
-                      {b.status.replaceAll('_', ' ')}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        PAYMENT_STYLES[b.payment?.paymentStatus] ||
-                        'badge-outline'
-                      }`}
-                    >
-                      {b.payment?.paymentStatus || 'unknown'}
-                    </span>
-                  </td>
-                  {/* Decorators list */}
-                  <td>
+                  </p>
+
+                  <p>
+                    <span className='font-medium'>Service:</span>{' '}
+                    {b.serviceSnapshot?.service_name || '—'}
+                  </p>
+
+                  <p>
+                    <span className='font-medium'>Decorators:</span>{' '}
                     {b.assignedDecorators?.length > 0
                       ? b.assignedDecorators
                           .map((d) => d.name || d.email)
                           .join(', ')
                       : '—'}
-                  </td>
-                  {/* Actions */}
+                  </p>
+                </div>
 
-                  <td>
-                    <button
-                      className={`btn btn-sm ${
-                        b.payment?.paymentStatus === 'paid'
-                          ? 'btn-info'
-                          : 'bg-gray-400 cursor-not-allowed'
-                      }`}
-                      disabled={!b.payment?.paymentStatus === 'paid'}
-                      onClick={() =>
-                        b.payment?.paymentStatus === 'paid' &&
-                        openAssignModal(b)
-                      }
-                    >
-                      Assign
-                    </button>
-                  </td>
+                <div className='flex justify-between items-center pt-2'>
+                  <span
+                    className={`badge ${
+                      PAYMENT_STYLES[b.payment?.paymentStatus] ||
+                      'badge-outline'
+                    }`}
+                  >
+                    {b.payment?.paymentStatus || 'unknown'}
+                  </span>
+
+                  <button
+                    className={`btn btn-sm ${
+                      b.payment?.paymentStatus === 'paid'
+                        ? 'btn-info'
+                        : 'bg-gray-400 cursor-not-allowed'
+                    }`}
+                    disabled={b.payment?.paymentStatus !== 'paid'}
+                    onClick={() =>
+                      b.payment?.paymentStatus === 'paid' && openAssignModal(b)
+                    }
+                  >
+                    Assign
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ===== DESKTOP VIEW ===== */}
+          <div className='hidden lg:block overflow-x-auto'>
+            <table className='table table-zebra w-full'>
+              <thead>
+                <tr>
+                  <th>Booking Ref</th>
+                  <th>User Email</th>
+                  <th>Service</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                  <th>Decorators</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+
+              <tbody>
+                {filtered.map((b) => (
+                  <tr key={b._id}>
+                    <td>{b.bookingRef}</td>
+                    <td>
+                      <a
+                        href={`mailto:${b.customer?.email || b.userEmail}`}
+                        className='text-blue-600 underline'
+                      >
+                        {b.customer?.email || b.userEmail}
+                      </a>
+                    </td>
+                    <td>{b.serviceSnapshot?.service_name || '—'}</td>
+                    <td>{new Date(b.bookingDate).toLocaleDateString()}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          STATUS_STYLES[b.status] || 'badge-outline'
+                        }`}
+                      >
+                        {b.status.replaceAll('_', ' ')}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          PAYMENT_STYLES[b.payment?.paymentStatus] ||
+                          'badge-outline'
+                        }`}
+                      >
+                        {b.payment?.paymentStatus || 'unknown'}
+                      </span>
+                    </td>
+                    <td>
+                      {b.assignedDecorators?.length > 0
+                        ? b.assignedDecorators
+                            .map((d) => d.name || d.email)
+                            .join(', ')
+                        : '—'}
+                    </td>
+                    <td>
+                      <button
+                        className={`btn btn-sm ${
+                          b.payment?.paymentStatus === 'paid'
+                            ? 'btn-info'
+                            : 'bg-gray-400 cursor-not-allowed'
+                        }`}
+                        disabled={b.payment?.paymentStatus !== 'paid'}
+                        onClick={() =>
+                          b.payment?.paymentStatus === 'paid' &&
+                          openAssignModal(b)
+                        }
+                      >
+                        Assign
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Pagination */}

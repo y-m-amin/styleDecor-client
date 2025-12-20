@@ -1,222 +1,117 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import axios from '../../api/axios';
 import MapComponent from '../../components/MapComponent';
 import ServiceCard from '../../components/ServiceCard';
 import SkeletonCard from '../../components/SkeletonCard';
-import { AuthContext } from '../../context/AuthContext';
-import { Link, Navigate, useNavigate } from "react-router";
-import { motion } from "framer-motion";
 import Hero from './Hero';
 
 export default function Home() {
   const [services, setServices] = useState([]);
-  const [filtered, setFiltered] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [decorators, setDecorators] = useState([]);
-
-  // search / filter state
-  const [q, setQ] = useState('');
-  const [category, setCategory] = useState('');
-  const [minCost, setMinCost] = useState('');
-  const [maxCost, setMaxCost] = useState('');
-
-  const { user } = useContext(AuthContext) || {};
 
   let navigate = useNavigate();
 
   useEffect(() => {
-  const fetchTopDecorators = async () => {
-    try {
-      const res = await axios.get("/decorators/top?limit=6");
-      setDecorators(res.data.decorators || []);
-    } catch (err) {
-      console.error("Failed to load decorators", err);
-    }
-  };
-  fetchTopDecorators();
-}, []);
+    const fetchTopDecorators = async () => {
+      try {
+        const res = await axios.get('/decorators/top?limit=6');
+        setDecorators(res.data.decorators || []);
+      } catch (err) {
+        console.error('Failed to load decorators', err);
+      }
+    };
+    fetchTopDecorators();
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
     const fetchServices = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('/services', { params: { limit: 12 } });
-        if (!mounted) return;
+        const res = await axios.get('/services', {
+          params: { limit: 6 },
+        });
         setServices(res.data.services || []);
-        setFiltered(res.data.services || []);
       } catch (err) {
-        console.error('Failed to fetch services', err);
+        console.error(err);
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(false);
       }
     };
     fetchServices();
-    return () => {
-      mounted = false;
-    };
   }, []);
-
-  // derive categories from services
-  const categories = useMemo(() => {
-    const set = new Set(
-      services.map((s) => s.service_category).filter(Boolean)
-    );
-    return Array.from(set);
-  }, [services]);
-
-  const handleSearch = async (e) => {
-    e?.preventDefault();
-    setLoading(true);
-    try {
-      const params = {};
-      if (q) params.search = q;
-      if (category) params.category = category;
-      if (minCost) params.minCost = minCost;
-      if (maxCost) params.maxCost = maxCost;
-      const res = await axios.get('/services', { params });
-      setFiltered(res.data.services || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Top decorators: derive from services.createdByEmail grouped by count
-  const topDecorators = useMemo(() => {
-    const map = {};
-    services.forEach((s) => {
-      const email = s.createdByEmail || 'unknown';
-      map[email] = (map[email] || 0) + 1;
-    });
-    const arr = Object.entries(map).map(([email, count]) => ({ email, count }));
-    return arr.sort((a, b) => b.count - a.count).slice(0, 6);
-  }, [services]);
 
   return (
     <div>
       <Hero />
 
       <section className='container mx-auto px-4 py-10'>
-        <div className='flex items-center justify-between mb-6'>
+        <div className='flex justify-between items-center mb-6'>
           <h2 className='text-2xl font-semibold'>
             Popular Decoration Services
           </h2>
-          <div className='text-sm text-gray-600'>Total: {services.length}</div>
+          <button
+            onClick={() => navigate('/services')}
+            className='btn btn-outline btn-sm'
+          >
+            See More Services →
+          </button>
         </div>
 
-        <form
-          onSubmit={handleSearch}
-          className='grid grid-cols-1 md:grid-cols-6 gap-3 mb-6'
-        >
-          <input
-            placeholder='Search by name...'
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            className='col-span-2 input input-bordered'
-          />
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className='input input-bordered'
-          >
-            <option value=''>All categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <input
-            placeholder='Min BDT'
-            value={minCost}
-            onChange={(e) => setMinCost(e.target.value)}
-            className='input input-bordered'
-            type='number'
-          />
-          <input
-            placeholder='Max BDT'
-            value={maxCost}
-            onChange={(e) => setMaxCost(e.target.value)}
-            className='input input-bordered'
-            type='number'
-          />
-          <div className='flex items-center gap-2'>
-            <button className='btn btn-primary' type='submit'>
-              Search
-            </button>
-            <button
-              type='button'
-              className='btn btn-ghost'
-              onClick={() => {
-                setQ('');
-                setCategory('');
-                setMinCost('');
-                setMaxCost('');
-                setFiltered(services);
-              }}
-            >
-              Reset
-            </button>
-          </div>
-        </form>
-
         {loading ? (
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+          <div className='grid md:grid-cols-3 gap-6'>
             {[...Array(6)].map((_, i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
         ) : (
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {filtered.length === 0 ? (
-              <div className='col-span-full text-center py-8 text-gray-600'>
-                No services found.
-              </div>
-            ) : (
-              filtered.map((s) => <ServiceCard key={s._id} service={s} />)
-            )}
+          <div className='grid md:grid-cols-3 gap-6'>
+            {services.map((s) => (
+              <ServiceCard key={s._id} service={s} />
+            ))}
           </div>
         )}
       </section>
 
-      <section className="py-10">
-  <div className="container mx-auto px-4">
-    <h3 className="text-xl font-semibold mb-4">Top Decorators</h3>
-    {decorators.length === 0 ? (
-      <p className="text-gray-500">No decorators yet.</p>
-    ) : (
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        {decorators.map((d) => (
-          <motion.div
-            key={d._id}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            className="bg-base-300 p-4 rounded-lg shadow cursor-pointer"
-            onClick={() => navigate(`/decorators/${d._id}`)}
-          >
-            <div className="flex flex-col items-center text-center">
-              <img
-                src={d.photoURL}
-                alt={d.displayName}
-                className="w-20 h-20 rounded-full object-cover"
-              />
-              <div className="mt-2 font-semibold">{d.displayName}</div>
-              <div className="text-xs text-gray-500 my-1">
-                Rating: {d.rating ?? "N/A"}
-              </div>
-              <div className="text-xs text-gray600">
-                {d.specialties?.join(", ") || "No specialties"}
-              </div>
+      <section className='py-10'>
+        <div className='container mx-auto px-4'>
+          <h3 className='text-xl font-semibold mb-4'>Top Decorators</h3>
+          {decorators.length === 0 ? (
+            <p className='text-gray-500'>No decorators yet.</p>
+          ) : (
+            <div className='grid grid-cols-2 md:grid-cols-6 gap-4'>
+              {decorators.map((d) => (
+                <motion.div
+                  key={d._id}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                  className='bg-base-300 p-4 rounded-lg shadow cursor-pointer'
+                  onClick={() => navigate(`/decorators/${d._id}`)}
+                >
+                  <div className='flex flex-col items-center text-center'>
+                    <img
+                      src={d.photoURL}
+                      alt={d.displayName}
+                      className='w-20 h-20 rounded-full object-cover'
+                    />
+                    <div className='mt-2 font-semibold'>{d.displayName}</div>
+                    <div className='text-xs text-gray-500 my-1'>
+                      Rating: {d.rating ?? 'N/A'}
+                    </div>
+                    <div className='text-xs text-gray600'>
+                      {d.specialties?.join(', ') || 'No specialties'}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </motion.div>
-        ))}
-      </div>
-    )}
-  </div>
-</section>
+          )}
+        </div>
+      </section>
 
       <section className='container mx-auto px-4 py-10'>
         <h3 className='text-xl font-semibold mb-4'>Service Coverage Map</h3>

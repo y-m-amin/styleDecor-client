@@ -4,45 +4,172 @@ import ServiceCard from '../../components/ServiceCard';
 import SkeletonCard from '../../components/SkeletonCard';
 
 export default function ServicesList() {
-  const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('');
   const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  async function fetchServices() {
-    setLoading(true);
-    const { data } = await axios.get('/services', {
-      params: { search: query, category },
-    });
-    setServices(data.services);
-    setLoading(false);
-  }
+  // filters
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('');
+  const [minCost, setMinCost] = useState('');
+  const [maxCost, setMaxCost] = useState('');
 
+  // pagination
+  const [page, setPage] = useState(1);
+  const limit = 9;
+  const [totalPages, setTotalPages] = useState(1);
+
+  const fetchServices = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get('/services', {
+        params: {
+          search: query || undefined,
+          category: category || undefined,
+          minCost: minCost || undefined,
+          maxCost: maxCost || undefined,
+          page,
+          limit,
+        },
+      });
+
+      setServices(data.services || []);
+      setTotalPages(Math.ceil(data.total / limit));
+    } catch (err) {
+      console.error('Failed to load services', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔑 FETCH WHEN PAGE OR FILTERS CHANGE
   useEffect(() => {
     fetchServices();
+  }, [page]);
+
+  // 🔑 RESET PAGE WHEN FILTERS CHANGE
+  useEffect(() => {
+    setPage(1);
+  }, [query, category, minCost, maxCost]);
+
+  // load categories once
+  useEffect(() => {
+    axios.get('/services/categories').then((res) => {
+      setCategories(res.data || []);
+    });
   }, []);
 
-  return (
-    <div className='p-8'>
-      <input
-        type='text'
-        placeholder='Search service...'
-        className='border px-4 py-2 w-64'
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <button
-        onClick={fetchServices}
-        className='ml-3 px-4 py-2 bg-blue-500 text-white rounded'
-      >
-        Search
-      </button>
+  const handleSearch = () => {
+    setPage(1);
+    fetchServices();
+  };
 
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mt-8'>
-        {loading
-          ? [...Array(6)].map((_, i) => <SkeletonCard key={i} />)
-          : services.map((s) => <ServiceCard key={s._id} service={s} />)}
+  return (
+    <div className='container mx-auto px-4 py-8'>
+      <h2 className='text-2xl font-semibold mb-6'>All Services</h2>
+
+      {/* Filters */}
+      <div className='grid grid-cols-1 md:grid-cols-6 gap-3 mb-6'>
+        <input
+          className='input input-bordered md:col-span-2'
+          placeholder='Search service...'
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+
+        <select
+          className='input input-bordered'
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value=''>All Categories</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type='number'
+          className='input input-bordered'
+          placeholder='Min BDT'
+          value={minCost}
+          onChange={(e) => setMinCost(e.target.value)}
+        />
+
+        <input
+          type='number'
+          className='input input-bordered'
+          placeholder='Max BDT'
+          value={maxCost}
+          onChange={(e) => setMaxCost(e.target.value)}
+        />
+
+        <div className='flex gap-2'>
+          <button className='btn btn-primary' onClick={handleSearch}>
+            Search
+          </button>
+          <button
+            className='btn btn-ghost'
+            onClick={() => {
+              setQuery('');
+              setCategory('');
+              setMinCost('');
+              setMaxCost('');
+              setPage(1);
+            }}
+          >
+            Reset
+          </button>
+        </div>
       </div>
+
+      {/* Services Grid */}
+      {loading ? (
+        <div className='grid sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+          {[...Array(9)].map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      ) : (
+        <div className='grid sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+          {services.length === 0 ? (
+            <div className='col-span-full text-center text-gray-500'>
+              No services found
+            </div>
+          ) : (
+            services.map((s) => <ServiceCard key={s._id} service={s} />)
+          )}
+        </div>
+      )}
+
+      {/* Pagination (DaisyUI Join) */}
+      {totalPages > 1 && (
+        <div className='flex justify-center mt-10'>
+          <div className='join'>
+            <button
+              className='join-item btn'
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              «
+            </button>
+
+            <button className='join-item btn btn-active'>
+              Page {page} / {totalPages}
+            </button>
+
+            <button
+              className='join-item btn'
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              »
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
