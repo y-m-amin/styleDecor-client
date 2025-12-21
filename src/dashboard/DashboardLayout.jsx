@@ -1,87 +1,132 @@
-import { useContext } from 'react';
-import { Link, Outlet } from 'react-router';
+import { useContext, useMemo } from 'react';
+import { Link, Outlet, useLocation } from 'react-router';
 import Navbar from '../Components/NavBar';
 import { AuthContext } from '../context/AuthContext';
 
 export default function DashboardLayout() {
   const { role, decoratorStatus } = useContext(AuthContext);
+  const location = useLocation();
+
+  /**
+   *  dashboard navigation
+   */
+  const navConfig = useMemo(() => {
+    if (role === 'admin') {
+      return {
+        title: 'Admin Menu',
+        links: [
+          { label: 'Dashboard', to: '/dashboard/admin/analytics' },
+          { label: 'Manage Services', to: '/dashboard/admin/manage-services' },
+          { label: 'Manage Bookings', to: '/dashboard/admin/manage-bookings' },
+          { label: 'Manage Decorators', to: '/dashboard/admin/manage-decorators' },
+        ],
+      };
+    }
+
+    if (role === 'decorator' && decoratorStatus === 'active') {
+      return {
+        title: 'Decorator Menu',
+        links: [
+          { label: 'My Projects', to: '/dashboard/decorator/projects' },
+          { label: 'My Profile', to: '/dashboard/decorator/my-profile' },
+          { label: 'Schedule', to: '/dashboard/decorator/schedule' },
+        ],
+      };
+    }
+
+    // default: user
+    const links = [
+      { label: 'My Profile', to: '/dashboard' },
+      { label: 'My Bookings', to: '/dashboard/my-bookings' },
+      { label: 'Payments', to: '/dashboard/payment-history' },
+    ];
+
+    if (decoratorStatus === 'inactive' || decoratorStatus === 'none' ) {
+      links.push({
+        label: 'Apply as Decorator',
+        to: '/dashboard/apply-decorator',
+        className: 'text-yellow-500',
+      });
+    }
+
+    if (decoratorStatus === 'pending') {
+      links.push({
+        label: 'Decorator application pending',
+        to: null,
+        className: 'text-yellow-500 cursor-default',
+      });
+    }
+
+    return {
+      title: 'User Menu',
+      links,
+    };
+  }, [role, decoratorStatus]);
+
+  const renderLinks = (isMobile = false) =>
+    navConfig.links.map((link) =>
+      link.to ? (
+        <Link
+          key={link.label}
+          to={link.to}
+          className={[
+            'hover:text-primary',
+            link.className || '',
+            location.pathname === link.to ? 'text-primary font-medium' : '',
+            isMobile ? 'px-2 py-1' : '',
+          ].join(' ')}
+        >
+          {link.label}
+        </Link>
+      ) : (
+        <span
+          key={link.label}
+          className={['text-sm', link.className || ''].join(' ')}
+        >
+          {link.label}
+        </span>
+      )
+    );
 
   return (
     <div>
-      <div className='sticky top-0 z-50 bg-base-100 shadow-sm'>
+      {/* Top Navbar */}
+      <div className="sticky top-0 z-50 bg-base-100 shadow-sm">
         <Navbar />
       </div>
 
-      <div className='flex'>
-        {/* Sidebar */}
-        <aside className='w-64 bg-gray-900 text-white min-h-screen p-6 space-y-6'>
-          {/* USER MENU */}
-          {role === 'user' && (
-            <div className='flex flex-col gap-2'>
-              <h3 className='text-sm uppercase text-gray-400'>User</h3>
+      {/* Mobile dropdown navigation */}
+      <div className="md:hidden flex mx-auto px-4 py-3 border-b bg-base-200">
+        <div className="w-1/3  mx-auto dropdown  dropdown-center">
+          <div tabIndex={0} role="button" className="btn btn-sm w-full">
+            {navConfig.title}
+          </div>
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu bg-base-100 rounded-box z-10 w-full p-2 shadow"
+          >
+            {renderLinks(true).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
-              <Link to='/dashboard' className='hover:text-primary'>
-                My Profile
-              </Link>
-              <Link to='/dashboard/my-bookings' className='hover:text-primary'>
-                My Bookings
-              </Link>
-              <Link
-                to='/dashboard/payment-history'
-                className='hover:text-primary'
-              >
-                Payments
-              </Link>
-
-              {/* Apply as Decorator */}
-              {decoratorStatus === 'none' && (
-                <Link
-                  to='/dashboard/apply-decorator'
-                  className='mt-2 text-yellow-400 hover:text-yellow-300'
-                >
-                  Apply as Decorator
-                </Link>
-              )}
-
-              {/* Pending state */}
-              {decoratorStatus === 'pending' && (
-                <span className='mt-2 text-yellow-500 text-sm'>
-                  Decorator application pending
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* ADMIN MENU */}
-          {role === 'admin' && (
-            <div className='flex flex-col gap-2'>
-              <h3 className='text-sm uppercase text-gray-400'>Admin</h3>
-
-              <Link to='/dashboard/admin/analytics'>Dashboard</Link>
-              <Link to='/dashboard/admin/manage-services'>Manage Services</Link>
-              <Link to='/dashboard/admin/manage-bookings'>Manage Bookings</Link>
-              <Link to='/dashboard/admin/manage-decorators'>
-                Manage Decorators
-              </Link>
-            </div>
-          )}
-
-          {/* DECORATOR MENU */}
-          {role === 'decorator' && decoratorStatus === 'active' && (
-            <div className='flex flex-col gap-2'>
-              <h3 className='text-sm uppercase text-gray-400'>Decorator</h3>
-
-              <Link to='/dashboard/decorator/projects'>My Projects</Link>
-              <Link to='/dashboard/decorator/my-profile'>My Profile</Link>
-              <Link to='/dashboard/decorator/schedule'>ProjectSchedule</Link>
-            </div>
-          )}
+      <div className="flex">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:block w-64 bg-gray-900 text-white min-h-screen p-6 space-y-4">
+          <h3 className="text-sm uppercase text-gray-400">
+            {navConfig.title}
+          </h3>
+          <div className="flex flex-col gap-2">
+            {renderLinks()}
+          </div>
         </aside>
 
         {/* Content */}
-        <div className='flex-1 p-6  min-h-screen'>
+        <main className="flex-1 p-4 sm:p-6 min-h-screen">
           <Outlet />
-        </div>
+        </main>
       </div>
     </div>
   );

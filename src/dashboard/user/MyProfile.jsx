@@ -61,7 +61,7 @@ const MyProfile = () => {
 
   return (
     <div className='flex justify-center px-4 py-10'>
-      <div className='w-full max-w-lg space-y-5 text-center'>
+      <div className='w-full  max-w-lg space-y-5 text-center'>
         <h2 className='text-2xl font-bold'>My Profile</h2>
 
         {/* Image */}

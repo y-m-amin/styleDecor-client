@@ -75,7 +75,7 @@ export default function ManageDecorators() {
       {loading ? (
         <p>Loading decorators...</p>
       ) : (
-        <div className='overflow-x-auto'>
+        <div className='overflow-x-auto mx-auto'>
           <table className='table table-zebra w-full'>
             <thead>
               <tr>
