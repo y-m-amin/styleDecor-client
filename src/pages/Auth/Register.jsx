@@ -1,10 +1,10 @@
-import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
-import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import { ToastContainer, toast } from "react-toastify";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import "react-toastify/dist/ReactToastify.css";
+import { useContext, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function Register() {
   const { createUser, signInWithGoogle } = useContext(AuthContext);
@@ -21,160 +21,139 @@ export default function Register() {
   const onSubmit = async (data) => {
     try {
       const { name, email, password, photo } = data;
-
-      const photoFile = photo?.[0] || null;
-
       await createUser({
         name,
         email,
         password,
-        photoFile,
+        photoFile: photo?.[0] || null,
       });
 
-      toast.success("Registration successful!", { autoClose: 1200 });
-
-      setTimeout(() => {
-        navigate("/");
-      }, 1200);
-
+      toast.success('Registration successful!');
+      setTimeout(() => navigate('/'), 1200);
       reset();
     } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Registration failed");
+      toast.error(err.message || 'Registration failed');
     }
   };
 
   const handleGoogleRegister = async () => {
     try {
       await signInWithGoogle();
-      toast.success("Registered with Google!", { autoClose: 1200 });
-
-      setTimeout(() => navigate("/"), 1200);
-    } catch (err) {
-      toast.error("Google authentication failed");
+      toast.success('Registered with Google!');
+      setTimeout(() => navigate('/'), 1200);
+    } catch {
+      toast.error('Google authentication failed');
     }
   };
 
   return (
-    <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content flex-col lg:flex-row gap-20">
-        <div className="text-center lg:text-left">
-          <h1 className="text-5xl font-bold text-accent">Register Now!</h1>
-          <p className="py-6 max-w-md text-gray-600">
-            Create your account to book decoration services or become a decorator later.
-          </p>
-        </div>
+    <div className='min-h-screen bg-base-200 flex items-center justify-center px-4'>
+      <div className='flex w-full max-w-sm lg:max-w-4xl bg-base-100 rounded-xl shadow-xl overflow-hidden'>
+        {/* Image */}
+        <div
+          className='hidden lg:block lg:w-1/2 bg-cover'
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80')",
+          }}
+        />
 
-        <div className="card bg-base-100 w-full max-w-sm shadow-xl">
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="card-body space-y-3"
+        {/* Form */}
+        <div className='w-full p-6 sm:p-8 lg:w-1/2'>
+          <h2 className='text-2xl font-bold text-center text-primary'>
+            Create Account
+          </h2>
+          <p className='text-center text-sm text-base-content/60 mb-6'>
+            Join us in a few seconds
+          </p>
+
+          <button
+            onClick={handleGoogleRegister}
+            className='btn btn-outline btn-secondary w-full mb-4'
+            type='button'
           >
-            {/* Name */}
+            <img
+              src='https://www.svgrepo.com/show/475656/google-color.svg'
+              className='w-5 h-5 mr-2'
+            />
+            Continue with Google
+          </button>
+
+          <div className='divider text-xs'>OR</div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
             <div>
-              <label className="label font-semibold">Full Name</label>
+              <label className='label font-semibold'>Full Name</label>
               <input
-                type="text"
-                className="input input-bordered w-full"
-                {...register("name", { required: "Name is required" })}
+                className='input input-bordered w-full'
+                {...register('name', { required: 'Name required' })}
               />
               {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name.message}</p>
+                <p className='text-error text-sm'>{errors.name.message}</p>
               )}
             </div>
 
-            {/* Email */}
             <div>
-              <label className="label font-semibold">Email</label>
+              <label className='label font-semibold'>Email</label>
               <input
-                type="email"
-                className="input input-bordered w-full"
-                {...register("email", { required: "Email is required" })}
+                type='email'
+                className='input input-bordered w-full'
+                {...register('email', { required: 'Email required' })}
               />
               {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email.message}</p>
+                <p className='text-error text-sm'>{errors.email.message}</p>
               )}
             </div>
 
-            {/* Photo */}
             <div>
-              <label className="label font-semibold">Profile Photo</label>
+              <label className='label font-semibold'>Profile Photo</label>
               <input
-                type="file"
-                className="file-input file-input-bordered w-full"
-                accept="image/*"
-                {...register("photo")}
+                type='file'
+                className='file-input file-input-bordered w-full'
+                {...register('photo')}
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label className="label font-semibold">Password</label>
-              <div className="relative">
+              <label className='label font-semibold'>Password</label>
+              <div className='relative'>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  className="input input-bordered w-full pr-10"
-                  {...register("password", {
-                    required: "Password required",
-                    minLength: {
-                      value: 6,
-                      message: "Must be at least 6 characters",
-                    },
-                    validate: {
-                      upper: (v) =>
-                        /[A-Z]/.test(v) || "Must contain at least one uppercase letter",
-                      lower: (v) =>
-                        /[a-z]/.test(v) || "Must contain at least one lowercase letter",
-                    },
-                  })}
+                  type={showPassword ? 'text' : 'password'}
+                  className='input input-bordered w-full pr-10'
+                  {...register('password')}
                 />
-
                 <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  type='button'
+                  className='absolute right-3 top-1/2 -translate-y-1/2 opacity-60'
                   onClick={() => setShowPassword((p) => !p)}
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
-
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                <p className='text-error text-sm'>{errors.password.message}</p>
               )}
             </div>
 
-            {/* Submit */}
             <button
+              className='btn btn-primary w-full'
               disabled={isSubmitting}
-              className="btn btn-accent w-full"
-              type="submit"
+              type='submit'
             >
-              {isSubmitting ? "Registering..." : "Register"}
+              {isSubmitting ? 'Registering...' : 'Register'}
             </button>
-
-            {/* Google */}
-            <button
-              type="button"
-              onClick={handleGoogleRegister}
-              className="btn btn-outline btn-secondary w-full"
-            >
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                className="w-5 h-5 mr-2"
-              />
-              Continue with Google
-            </button>
-
-            <p className="text-center text-sm mt-3">
-              Already a user?{" "}
-              <Link to="/login" className="link link-primary">
-                Login
-              </Link>
-            </p>
           </form>
+
+          <p className='text-center text-sm mt-6'>
+            Already have an account?{' '}
+            <Link to='/login' className='link link-primary font-semibold'>
+              Login
+            </Link>
+          </p>
         </div>
       </div>
-      <ToastContainer position="top-center" theme="colored" />
+
+      <ToastContainer position='top-center' theme='colored' />
     </div>
   );
 }
