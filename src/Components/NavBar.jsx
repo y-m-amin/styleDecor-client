@@ -2,6 +2,8 @@ import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { AuthContext } from '../context/AuthContext';
 
+import { useLocation } from 'react-router';
+
 const NAV_LINKS = [
   { name: 'Home', path: '/' },
   { name: 'Services', path: '/services' },
@@ -11,6 +13,9 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/login';
+
   const { user, logOut, role, loading } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -20,7 +25,6 @@ export default function Navbar() {
     navigate('/');
   };
 
-  // ✅ prevents cascading renders
   useEffect(() => {
     if (open) setOpen(false);
   }, [user]);
@@ -82,8 +86,11 @@ export default function Navbar() {
         {loading ? (
           <div className='w-24 h-9' />
         ) : !user ? (
-          <Link to='/login' className='btn btn-sm bg-indigo-600 text-white'>
-            Login
+          <Link
+            to={isLoginPage ? '/register' : '/login'}
+            className='btn btn-sm btn-primary'
+          >
+            {isLoginPage ? 'Register' : 'Login'}
           </Link>
         ) : (
           <div className='dropdown dropdown-end'>
@@ -120,7 +127,7 @@ export default function Navbar() {
               )}
 
               <li>
-                <button onClick={logOut}>Logout</button>
+                <button onClick={handleLogout}>Logout</button>
               </li>
             </ul>
           </div>
