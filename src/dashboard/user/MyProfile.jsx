@@ -57,20 +57,36 @@ const MyProfile = () => {
     }
   };
 
-  if (loading) return <Skeleton count={6} height={30} />;
+  /** 🔹 SKELETON UI */
+  if (loading) {
+    return (
+      <div className='flex justify-center px-4 py-10'>
+        <div className='w-full max-w-lg space-y-5 text-center'>
+          <Skeleton circle width={112} height={112} className='mx-auto' />
+          <Skeleton height={40} />
+          <Skeleton height={20} width='70%' />
+          <Skeleton height={44} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex justify-center px-4 py-10'>
-      <div className='w-full  max-w-lg space-y-5 text-center'>
+      <div className='w-full max-w-lg space-y-5 text-center'>
         <h2 className='text-2xl font-bold'>My Profile</h2>
 
-        {/* Image */}
+        {/* Avatar */}
         <div className='flex flex-col items-center gap-3'>
           <img
             src={profile?.photoURL || 'https://i.ibb.co/2kRzF5H/user.png'}
             className='w-28 h-28 rounded-full object-cover border'
           />
-          <input type='file' onChange={(e) => setPhoto(e.target.files[0])} />
+          <input
+            type='file'
+            className='file-input file-input-bordered file-input-sm'
+            onChange={(e) => setPhoto(e.target.files[0])}
+          />
         </div>
 
         {/* Name */}
@@ -81,7 +97,7 @@ const MyProfile = () => {
           placeholder='Your name'
         />
 
-        <div className='text-left space-y-2 text-sm opacity-80'>
+        <div className='text-left text-sm opacity-80'>
           <p>
             <b>Email:</b> {profile.email}
           </p>

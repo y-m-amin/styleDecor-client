@@ -16,8 +16,12 @@ import PaymentHistory from '../dashboard/user/PaymentHistory';
 import MainLayout from '../layouts/MainLayout';
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
+import DecoratorProfilePub from '../pages/Decorator/DecoratorProfilePub';
+import GlobalError from '../pages/Error/GlobalError';
 import Home from '../pages/Home/Home';
 import ServiceCoverageMap from '../pages/Map/ServiceCoverageMap';
+import About from '../pages/Misc/About';
+import Contact from '../pages/Misc/Contact';
 import PaymentCancelled from '../pages/Payment/PaymentCancelled';
 import PaymentSuccess from '../pages/Payment/PaymentSuccess';
 import ServiceDetails from '../pages/Services/ServiceDetails';
@@ -25,13 +29,12 @@ import ServicesList from '../pages/Services/ServiceList';
 import AdminRoute from './AdminRoute';
 import DecoratorRoute from './DecoratorRoute';
 import PrivateRoute from './PrivateRoute';
-import DecoratorProfilePub from '../pages/Decorator/DecoratorProfilePub';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
-    errorElement: <div>Global Error</div>,
+    errorElement: <GlobalError />,
     children: [
       { path: '/', element: <Home /> },
       { path: '/services', element: <ServicesList /> },
@@ -47,7 +50,9 @@ export const router = createBrowserRouter([
       { path: '/map', element: <ServiceCoverageMap /> },
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },
-      {path:'/decorators/:id', element:<DecoratorProfilePub />},
+      { path: '/decorators/:id', element: <DecoratorProfilePub /> },
+      { path: '/about', element: <About /> },
+      { path: '/contact', element: <Contact /> },
     ],
   },
 

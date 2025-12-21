@@ -1,7 +1,19 @@
-export default function Spinner({ className = '' }) {
+import { PuffLoader } from 'react-spinners';
+
+function Spinner() {
   return (
-    <div className={`flex justify-center items-center py-6 ${className}`}>
-      <div className='w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin' />
+    <div className='sweet-loading mx-auto flex justify-center items-center min-h-screen'>
+      <PuffLoader color='#3ce8e5' size={80} />
+      {/* <ClipLoader
+        color={color}
+        loading={loading}
+        cssOverride={override}
+        size={150}
+        aria-label='Loading Spinner'
+        data-testid='loader'
+      /> */}
     </div>
   );
 }
+
+export default Spinner;

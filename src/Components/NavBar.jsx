@@ -1,101 +1,131 @@
-import { useContext, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
-import { AuthContext } from "../context/AuthContext";
+import { useContext, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { AuthContext } from '../context/AuthContext';
+
+const NAV_LINKS = [
+  { name: 'Home', path: '/' },
+  { name: 'Services', path: '/services' },
+  { name: 'About', path: '/about' },
+  { name: 'Contact', path: '/contact' },
+  { name: 'Coverage', path: '/map' },
+];
 
 export default function Navbar() {
-  const { user, logOut, role } = useContext(AuthContext);
+  const { user, logOut, role, loading } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
-
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logOut();
-    navigate("/");
+    navigate('/');
   };
 
+  // ✅ prevents cascading renders
   useEffect(() => {
-  setOpen(false);
-}, [user]);
-
+    if (open) setOpen(false);
+  }, [user]);
 
   return (
-    <nav className="shadow-md ">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        
-        {/* Brand */}
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-linear-to-r from-indigo-500 to-pink-400 text-white rounded-md flex items-center justify-center font-bold">
-            SD
-          </div>
-          <span className="font-semibold text-lg">StyleDecor</span>
-        </Link>
+    <div className='navbar bg-base-100 shadow-sm px-4'>
+      {/* START */}
+      <div className='navbar-start'>
+        {/* Mobile menu */}
+        <div className='dropdown'>
+          <label tabIndex={0} className='btn btn-ghost lg:hidden'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='h-5 w-5'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth='2'
+                d='M4 6h16M4 12h8m-8 6h16'
+              />
+            </svg>
+          </label>
 
-        {/* Menu */}
-        <div className="hidden md:flex gap-6 text-sm">
-          <Link to="/">Home</Link>
-          <Link to="/services">Services</Link>
-          <Link to="/about">About</Link>
-          <Link to="/contact">Contact</Link>
-          <Link to="/map">Coverage</Link>
+          <ul
+            tabIndex={0}
+            className='menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow z-50'
+          >
+            {NAV_LINKS.map((link) => (
+              <li key={link.path}>
+                <Link to={link.path}>{link.name}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* Auth */}
-        {!user ? (
-          <Link
-            to="/login"
-            className="btn btn-sm bg-indigo-600 text-white px-4"
-          >
+        {/* Brand */}
+        <Link to='/' className='btn btn-ghost text-xl'>
+          StyleDecor
+        </Link>
+      </div>
+
+      {/* CENTER (Desktop only) */}
+      <div className='navbar-center hidden lg:flex'>
+        <ul className='menu menu-horizontal px-1 gap-1'>
+          {NAV_LINKS.map((link) => (
+            <li key={link.path}>
+              <Link to={link.path}>{link.name}</Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* END */}
+      <div className='navbar-end'>
+        {loading ? (
+          <div className='w-24 h-9' />
+        ) : !user ? (
+          <Link to='/login' className='btn btn-sm bg-indigo-600 text-white'>
             Login
           </Link>
         ) : (
-          <div className="relative">
-            <button
-              onClick={() => setOpen((o) => !o)}
-              className="flex items-center gap-2"
+          <div className='dropdown dropdown-end'>
+            <label
+              tabIndex={0}
+              className='flex items-center gap-2 cursor-pointer'
             >
               <img
-                src={user.photoURL || "/default-avatar.png"}
-                alt="avatar"
-                className="w-9 h-9 rounded-full object-cover border"
+                src={user.photoURL || '/default-avatar.png'}
+                className='w-9 h-9 rounded-full border object-cover'
               />
-              <span className="text-sm">{user.displayName || user.email}</span>
-            </button>
+              <span className='text-sm hidden md:block'>
+                {user.displayName || user.email}
+              </span>
+            </label>
 
-            {open && (
-              <div className="absolute right-0 mt-2 w-44  border rounded shadow z-50">
-                <Link to="/dashboard" className="block px-4 py-2 hover:bg-gray-500">
-                  Dashboard
-                </Link>
+            <ul className='menu dropdown-content bg-base-100 rounded-box w-44 mt-3 shadow z-50'>
+              {role === 'user' && (
+                <li>
+                  <Link to='/dashboard/my-bookings'>Dashboard</Link>
+                </li>
+              )}
 
-                {role === "admin" && (
-                  <Link
-                    to="/dashboard/admin/manage-services"
-                    className="block px-4 py-2 hover:bg-gray-500"
-                  >
-                    Admin Panel
-                  </Link>
-                )}
+              {role === 'admin' && (
+                <li>
+                  <Link to='/dashboard/admin/analytics'>Admin Panel</Link>
+                </li>
+              )}
 
-                {role === "decorator" && (
-                  <Link
-                    to="/dashboard/decorator/projects"
-                    className="block px-4 py-2 hover:bg-gray-500"
-                  >
-                    My Projects
-                  </Link>
-                )}
+              {role === 'decorator' && (
+                <li>
+                  <Link to='/dashboard/decorator/projects'>My Projects</Link>
+                </li>
+              )}
 
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-500"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
+              <li>
+                <button onClick={logOut}>Logout</button>
+              </li>
+            </ul>
           </div>
         )}
       </div>
-    </nav>
+    </div>
   );
 }
