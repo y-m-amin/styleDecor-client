@@ -123,10 +123,13 @@ export default function Register() {
                   {...register('password')}
                 />
                 <button
-                  type='button'
-                  className='absolute right-3 top-1/2 -translate-y-1/2 opacity-60'
-                  onClick={() => setShowPassword((p) => !p)}
-                >
+  type="button"
+  tabIndex={-1}
+  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 opacity-60 hover:opacity-100"
+  onMouseDown={(e) => e.preventDefault()}
+  onClick={() => setShowPassword((p) => !p)}
+>
+
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>

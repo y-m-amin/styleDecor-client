@@ -105,11 +105,14 @@ export default function Login() {
                   className='input input-bordered w-full pr-10'
                   {...register('password', { required: 'Password required' })}
                 />
-                <button
-                  type='button'
-                  className='absolute right-3 top-1/2 -translate-y-1/2 opacity-60'
-                  onClick={() => setShowPassword((s) => !s)}
-                >
+               <button
+  type="button"
+  tabIndex={-1}
+  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 opacity-60 hover:opacity-100"
+  onMouseDown={(e) => e.preventDefault()}
+  onClick={() => setShowPassword((s) => !s)}
+>
+
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>

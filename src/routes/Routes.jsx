@@ -29,6 +29,8 @@ import ServicesList from '../pages/Services/ServiceList';
 import AdminRoute from './AdminRoute';
 import DecoratorRoute from './DecoratorRoute';
 import PrivateRoute from './PrivateRoute';
+import Forbidden from '../pages/Error/Forbidden';
+
 
 export const router = createBrowserRouter([
   {
@@ -47,6 +49,8 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      { path: '/forbidden', element: <Forbidden /> },
+
       { path: '/map', element: <ServiceCoverageMap /> },
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },

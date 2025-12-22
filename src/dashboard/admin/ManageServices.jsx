@@ -7,6 +7,8 @@ export default function ManageServices() {
   const [loading, setLoading] = useState(true);
   const [modalType, setModalType] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
+  const [totalServices, setTotalServices] = useState(0);
+
 
   /** PAGINATION **/
   const [page, setPage] = useState(1);
@@ -15,18 +17,20 @@ export default function ManageServices() {
 
   /** FETCH SERVICES **/
   const fetchServices = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`/services?page=${page}&limit=${limit}`);
+  try {
+    setLoading(true);
+    const res = await axios.get(`/services?page=${page}&limit=${limit}`);
 
-      setServices(res.data.services);
-      setTotalPages(Math.ceil(res.data.total / limit));
-    } catch (err) {
-      console.error('Failed to load services', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setServices(res.data.services);
+    setTotalServices(res.data.total); 
+    setTotalPages(Math.ceil(res.data.total / limit));
+  } catch (err) {
+    console.error('Failed to load services', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchServices();
@@ -124,7 +128,8 @@ export default function ManageServices() {
           {/* LIST */}
           <ul className='list bg-base-100 rounded-box shadow-md'>
             <li className='p-4 pb-2 text-xs opacity-60 tracking-wide'>
-              Total Services: {services.length}
+              Total Services: {totalServices}
+
             </li>
 
             {services.map((s) => (
@@ -198,7 +203,7 @@ export default function ManageServices() {
         </>
       )}
 
-      {/* MODAL (unchanged UI logic) */}
+      {/* MODAL  */}
       {(modalType === 'add' || modalType === 'edit') && (
         <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
           <div className='bg-base-100 p-6 w-full max-w-lg rounded-lg'>

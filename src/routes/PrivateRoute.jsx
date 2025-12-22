@@ -1,16 +1,20 @@
-import { useContext } from 'react';
-import { Navigate } from 'react-router';
-import Spinner from '../Components/Spinner';
-import { AuthContext } from '../context/AuthContext';
+import { Navigate, useLocation } from 'react-router';
 
 export default function PrivateRoute({ children }) {
   const { user, loading } = useContext(AuthContext);
-  if (loading)
+  const location = useLocation();
+
+  if (loading) return <Spinner />;
+
+  if (!user) {
     return (
-      <div>
-        <Spinner />
-      </div>
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: location }}
+      />
     );
-  if (!user) return <Navigate to='/login' replace />;
+  }
+
   return children;
 }

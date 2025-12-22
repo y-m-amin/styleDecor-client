@@ -33,6 +33,36 @@ export default function ManageBookings() {
   const [selectedDecorators, setSelectedDecorators] = useState([]);
   const [statusSaving, setStatusSaving] = useState(false);
   const [assignSaving, setAssignSaving] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(false);
+
+
+  function MobileBookingSkeleton() {
+  return (
+    <div className="card bg-base-100 shadow-md p-4 space-y-2">
+      <Skeleton width="40%" height={16} />
+      <Skeleton width="30%" height={12} />
+      <Skeleton width="70%" height={12} />
+      <Skeleton width="60%" height={12} />
+      <div className="flex justify-between pt-2">
+        <Skeleton width={60} height={20} />
+        <Skeleton width={80} height={32} />
+      </div>
+    </div>
+  );
+}
+
+function DesktopBookingSkeletonRow() {
+  return (
+    <tr>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <td key={i}>
+          <Skeleton height={14} />
+        </td>
+      ))}
+    </tr>
+  );
+}
+
 
   // Fetch bookings (with pagination and optional status filter)
   const fetchBookings = async () => {
@@ -54,6 +84,17 @@ export default function ManageBookings() {
   useEffect(() => {
     fetchBookings();
   }, [statusFilter, page]);
+
+  useEffect(() => {
+  if (!loading) {
+    setShowSkeleton(false);
+    return;
+  }
+
+  const t = setTimeout(() => setShowSkeleton(true), 300);
+  return () => clearTimeout(t);
+}, [loading]);
+
 
   // Fetch active decorators for assignment
   const fetchDecorators = async () => {
@@ -146,10 +187,40 @@ export default function ManageBookings() {
         </button>
       </div>
 
-      {loading ? (
-        <Skeleton count={5} height={60} />
-      ) : filtered.length === 0 ? (
-        <p className='text-gray-600'>No bookings found.</p>
+      {loading && showSkeleton ? (
+  <>
+    {/* ===== MOBILE / TABLET SKELETON ===== */}
+    <div className="space-y-4 lg:hidden">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <MobileBookingSkeleton key={i} />
+      ))}
+    </div>
+
+    {/* ===== DESKTOP SKELETON ===== */}
+    <div className="hidden lg:block overflow-x-auto">
+      <table className="table table-zebra w-full">
+        <thead>
+          <tr>
+            <th>Booking Ref</th>
+            <th>User Email</th>
+            <th>Service</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Decorators</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <DesktopBookingSkeletonRow key={i} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </>
+) : filtered.length === 0 ? (
+  <p className="text-gray-600">No bookings found.</p>
       ) : (
         <>
           {/* ===== MOBILE / TABLET VIEW ===== */}
