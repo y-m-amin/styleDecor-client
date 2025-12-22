@@ -7,6 +7,7 @@ import ManageServices from '../dashboard/admin/ManageServices';
 import Revenue from '../dashboard/admin/Revenue';
 import DashboardLayout from '../dashboard/DashboardLayout';
 import DecoratorProfile from '../dashboard/decorator/DecoratorProfile';
+import EarningsSummary from '../dashboard/decorator/EarningsSummary';
 import MyProjects from '../dashboard/decorator/MyProjects';
 import MySchedule from '../dashboard/decorator/MySchedule';
 import ApplyDecorator from '../dashboard/user/ApplyDecorator';
@@ -162,6 +163,14 @@ export const router = createBrowserRouter([
         element: (
           <DecoratorRoute>
             <MySchedule />
+          </DecoratorRoute>
+        ),
+      },
+      {
+        path: 'decorator/earnings',
+        element: (
+          <DecoratorRoute>
+            <EarningsSummary />
           </DecoratorRoute>
         ),
       },

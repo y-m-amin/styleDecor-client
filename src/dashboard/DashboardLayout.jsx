@@ -18,7 +18,10 @@ export default function DashboardLayout() {
           { label: 'Dashboard', to: '/dashboard/admin/analytics' },
           { label: 'Manage Services', to: '/dashboard/admin/manage-services' },
           { label: 'Manage Bookings', to: '/dashboard/admin/manage-bookings' },
-          { label: 'Manage Decorators', to: '/dashboard/admin/manage-decorators' },
+          {
+            label: 'Manage Decorators',
+            to: '/dashboard/admin/manage-decorators',
+          },
         ],
       };
     }
@@ -30,6 +33,7 @@ export default function DashboardLayout() {
           { label: 'My Projects', to: '/dashboard/decorator/projects' },
           { label: 'My Profile', to: '/dashboard/decorator/my-profile' },
           { label: 'Schedule', to: '/dashboard/decorator/schedule' },
+          { label: 'Earning Summary', to: '/dashboard/decorator/earnings' },
         ],
       };
     }
@@ -41,7 +45,7 @@ export default function DashboardLayout() {
       { label: 'Payments', to: '/dashboard/payment-history' },
     ];
 
-    if (decoratorStatus === 'inactive' || decoratorStatus === 'none' ) {
+    if (decoratorStatus === 'inactive' || decoratorStatus === 'none') {
       links.push({
         label: 'Apply as Decorator',
         to: '/dashboard/apply-decorator',
@@ -91,19 +95,19 @@ export default function DashboardLayout() {
   return (
     <div>
       {/* Top Navbar */}
-      <div className="sticky top-0 z-50 bg-base-100 shadow-sm">
+      <div className='sticky top-0 z-50 bg-base-100 shadow-sm'>
         <Navbar />
       </div>
 
       {/* Mobile dropdown navigation */}
-      <div className="md:hidden flex mx-auto px-4 py-3 border-b bg-base-200">
-        <div className="w-1/3  mx-auto dropdown  dropdown-center">
-          <div tabIndex={0} role="button" className="btn btn-sm w-full">
+      <div className='md:hidden flex mx-auto px-4 py-3 border-b bg-base-200'>
+        <div className='w-1/3  mx-auto dropdown  dropdown-center'>
+          <div tabIndex={0} role='button' className='btn btn-sm w-full'>
             {navConfig.title}
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content menu bg-base-100 rounded-box z-10 w-full p-2 shadow"
+            className='dropdown-content menu bg-base-100 rounded-box z-10 w-full p-2 shadow'
           >
             {renderLinks(true).map((item, idx) => (
               <li key={idx}>{item}</li>
@@ -112,19 +116,15 @@ export default function DashboardLayout() {
         </div>
       </div>
 
-      <div className="flex">
+      <div className='flex'>
         {/* Desktop Sidebar */}
-        <aside className="hidden md:block w-64 bg-gray-900 text-white min-h-screen p-6 space-y-4">
-          <h3 className="text-sm uppercase text-gray-400">
-            {navConfig.title}
-          </h3>
-          <div className="flex flex-col gap-2">
-            {renderLinks()}
-          </div>
+        <aside className='hidden md:block w-64 bg-gray-900 text-white min-h-screen p-6 space-y-4'>
+          <h3 className='text-sm uppercase text-gray-400'>{navConfig.title}</h3>
+          <div className='flex flex-col gap-2'>{renderLinks()}</div>
         </aside>
 
         {/* Content */}
-        <main className="flex-1 p-4 sm:p-6 min-h-screen">
+        <main className='flex-1 p-4 sm:p-6 min-h-screen'>
           <Outlet />
         </main>
       </div>
