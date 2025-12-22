@@ -178,18 +178,25 @@ Users can:
 
 | Technology | Description | Link |
 |-------------|-------------|------|
+| **@tailwindcss/vite** | Official Tailwind CSS plugin for seamless Vite integration | [Tailwind + Vite](https://tailwindcss.com/docs/installation/using-vite) |
+| **Axios** | Promise-based HTTP client for making API requests | [Axios Docs](https://axios-http.com/docs/intro) |
+| **Firebase** | Backend-as-a-Service for authentication, database, storage, and hosting | [Firebase Docs](https://firebase.google.com/docs) |
+| **Leaflet** | Open-source JavaScript library for interactive maps | [Leaflet Docs](https://leafletjs.com/) |
+| **Motion** | Animation library for smooth and performant UI animations | [Motion Docs](https://motion.dev/) |
 | **React** | Core library for building the user interface | [React Docs](https://react.dev/) |
-| **React Router** | Handles client-side routing and navigation | [React Router](https://reactrouter.com/home) |
-| **TailwindCSS** | Utility-first CSS framework for fast UI development | [TailwindCSS Docs](https://tailwindcss.com/docs/installation/using-vite) |
-| **DaisyUI** | TailwindCSS component library for elegant UI elements | [DaisyUI Docs](https://daisyui.com/docs/intro/) |
-| **Firebase** | Backend-as-a-Service platform for authentication, database, hosting, and more | [Firebase Docs](https://firebase.google.com/docs) |
-| **AOS** | Animate on Scroll Library| [AOS Docs](https://github.com/michalsnik/aos) |
-| **Swiper** | Modern touch slider and carousel library | [Swiper Docs](https://swiperjs.com/react) |
-| **React FAST Marquee** | A lightweight React component that harnesses the power of CSS animations to create silky smooth marquees. | [React FAST Marquee Docs](https://www.react-fast-marquee.com/) |
-| **React Icons** | Collection of popular icon libraries for React | [React Icons](https://react-icons.github.io/react-icons/) |
-| **React Toastify** | Lightweight notifications for success/error messages | [React Toastify](https://fkhadra.github.io/react-toastify/introduction) |
+| **React DOM** | Entry point for rendering React components to the DOM | [React DOM Docs](https://react.dev/reference/react-dom) |
+| **React Hook Form** | Performant and flexible form handling with minimal re-renders | [React Hook Form](https://react-hook-form.com/) |
+| **React Icons** | Popular icon libraries as React components | [React Icons](https://react-icons.github.io/react-icons/) |
+| **React Leaflet** | React components for building Leaflet maps | [React Leaflet Docs](https://react-leaflet.js.org/) |
+| **React Loading Skeleton** | Create animated skeleton loaders for better UX | [React Loading Skeleton](https://github.com/dvtng/react-loading-skeleton) |
+| **React Router** | Declarative client-side routing for React applications | [React Router](https://reactrouter.com/home) |
+| **React Spinners** | Collection of loading spinner components for React | [React Spinners](https://www.davidhu.io/react-spinners/) |
+| **React To Print** | Easily print React components | [React To Print](https://www.npmjs.com/package/react-to-print) |
+| **React Toastify** | Toast notifications for success, warning, and error messages | [React Toastify](https://fkhadra.github.io/react-toastify/introduction) |
+| **Recharts** | Composable charting library built on React components | [Recharts Docs](https://recharts.org/en-US/) |
+| **TailwindCSS** | Utility-first CSS framework for rapid UI development | [TailwindCSS Docs](https://tailwindcss.com/docs) |
 | **Sweet Alert** | A beautiful replacement for JavaScript's "alert"| [Sweet Alert Docs](https://sweetalert.js.org/) |
-| **React Loading Indicators** | A lightweight react loading component library | [React Loading Indicators](https://react-loading-indicators.netlify.app/) |
+
 
 ---
 
