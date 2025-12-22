@@ -16,6 +16,7 @@ export default function Home() {
   let navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const fetchTopDecorators = async () => {
       try {
         const res = await axios.get('/decorators/top?limit=6');

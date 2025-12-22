@@ -17,6 +17,43 @@ export default function ServiceDetails() {
   const [serviceMode, setServiceMode] = useState("offline");
   const [location, setLocation] = useState("");
 
+  const [customerEmail, setCustomerEmail] = useState(user?.email || '');
+const [customerPhone, setCustomerPhone] = useState('');
+const [couponCode, setCouponCode] = useState('');
+const [pricePreview, setPricePreview] = useState(null);
+
+const TEST_COUPONS = {
+  NEWUSER10: { type: 'percent', value: 10 },
+  FLAT500: { type: 'flat', value: 500 },
+};
+
+const calculatePreview = () => {
+  if (!couponCode || !TEST_COUPONS[couponCode]) {
+    setPricePreview(null);
+    return;
+  }
+
+  const coupon = TEST_COUPONS[couponCode];
+  let discount = 0;
+
+  if (coupon.type === 'percent') {
+    discount = Math.round((service.cost * coupon.value) / 100);
+  } else {
+    discount = coupon.value;
+  }
+
+  setPricePreview({
+    original: service.cost,
+    discount,
+    final: service.cost - discount,
+  });
+};
+
+useEffect(() => {
+  if (service) calculatePreview();
+}, [couponCode, service]);
+
+
 
    const fetchService = async () => {
       try {
@@ -41,12 +78,20 @@ export default function ServiceDetails() {
     if (!bookingDate) return toast.error("Please choose a booking date");
 
     try {
-      await axios.post("/bookings", {
-        serviceId: id,
-        bookingDate,
-        serviceMode,
-        location,
-      });
+      if (!customerEmail || !customerPhone) {
+  return toast.error('Email and phone are required');
+}
+
+      await axios.post('/bookings', {
+  serviceId: id,
+  bookingDate,
+  serviceMode,
+  location,
+  customerEmail,
+  customerPhone,
+  couponCode: couponCode || null,
+});
+
       toast.success("Booking created! Check your My Bookings");
       navigate("/dashboard/my-bookings");
     } catch (err) {
@@ -113,6 +158,52 @@ export default function ServiceDetails() {
               />
             </div>
           )}
+
+          <div>
+  <label className="block text-sm font-medium mb-1">Contact Email</label>
+  <input
+    type="email"
+    value={customerEmail}
+    onChange={(e) => setCustomerEmail(e.target.value)}
+    className="input input-bordered w-full"
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-medium mb-1">Phone Number</label>
+  <input
+    type="text"
+    value={customerPhone}
+    onChange={(e) => setCustomerPhone(e.target.value)}
+    className="input input-bordered w-full"
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-medium mb-1">Coupon Code (optional)</label>
+  <input
+    type="text"
+    value={couponCode}
+    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+    className="input input-bordered w-full"
+    placeholder="e.g. NEWUSER10"
+  />
+</div>
+
+{pricePreview && (
+  <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
+    <p>Original: ৳{pricePreview.original}</p>
+    <p className="text-green-600">
+      Discount: −৳{pricePreview.discount}
+    </p>
+    <p className="font-semibold">
+      Final Price: ৳{pricePreview.final}
+    </p>
+  </div>
+)}
+
+
+
 
           <button
             onClick={handleBook}

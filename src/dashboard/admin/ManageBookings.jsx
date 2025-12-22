@@ -19,6 +19,9 @@ const PAYMENT_STYLES = {
   paid: 'badge-success',
 };
 
+const formatCurrency = (amt) => `৳${amt?.toLocaleString() || 0}`;
+
+
 export default function ManageBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +67,7 @@ function DesktopBookingSkeletonRow() {
 }
 
 
-  // Fetch bookings (with pagination and optional status filter)
+  // Fetch bookings 
   const fetchBookings = async () => {
     try {
       setLoading(true);
@@ -273,6 +276,31 @@ function DesktopBookingSkeletonRow() {
                   </p>
                 </div>
 
+                <div className="text-sm space-y-1">
+  {b.payment?.originalAmount && (
+    <p className="line-through opacity-50">
+      Original: {formatCurrency(b.payment.originalAmount)}
+    </p>
+  )}
+
+  {b.payment?.discount > 0 && (
+    <p className="text-green-600">
+      Discount: −{formatCurrency(b.payment.discount)}
+    </p>
+  )}
+
+  <p className="font-semibold">
+    Amount: {formatCurrency(b.payment.amount)}
+  </p>
+
+  {b.payment?.couponCode && (
+    <span className="badge badge-success badge-sm">
+      Coupon: {b.payment.couponCode}
+    </span>
+  )}
+</div>
+
+
                 <div className='flex justify-between items-center pt-2'>
                   <span
                     className={`badge ${
@@ -311,6 +339,8 @@ function DesktopBookingSkeletonRow() {
                   <th>Service</th>
                   <th>Date</th>
                   <th>Status</th>
+                  <th>Pricing</th>
+
                   <th>Payment</th>
                   <th>Decorators</th>
                   <th>Actions</th>
@@ -340,6 +370,30 @@ function DesktopBookingSkeletonRow() {
                         {b.status.replaceAll('_', ' ')}
                       </span>
                     </td>
+                    <td className="text-sm space-y-1">
+  {b.payment?.originalAmount && (
+    <div className="line-through opacity-50">
+      {formatCurrency(b.payment.originalAmount)}
+    </div>
+  )}
+
+  {b.payment?.discount > 0 && (
+    <div className="text-green-600">
+      −{formatCurrency(b.payment.discount)}
+    </div>
+  )}
+
+  <div className="font-semibold">
+    {formatCurrency(b.payment.amount)}
+  </div>
+
+  {b.payment?.couponCode && (
+    <span className="badge badge-success badge-sm mt-1">
+      {b.payment.couponCode}
+    </span>
+  )}
+</td>
+
                     <td>
                       <span
                         className={`badge ${

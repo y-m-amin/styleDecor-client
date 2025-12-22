@@ -42,18 +42,19 @@ export default function ServicesList() {
     }
   };
 
-  // 🔑 FETCH WHEN PAGE OR FILTERS CHANGE
+  //  FETCH WHEN PAGE OR FILTERS CHANGE
   useEffect(() => {
     fetchServices();
   }, [page]);
 
-  // 🔑 RESET PAGE WHEN FILTERS CHANGE
+  //  RESET PAGE WHEN FILTERS CHANGE
   useEffect(() => {
     setPage(1);
   }, [query, category, minCost, maxCost]);
 
   // load categories once
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     axios.get('/services/categories').then((res) => {
       setCategories(res.data || []);
     });
@@ -144,7 +145,7 @@ export default function ServicesList() {
         </div>
       )}
 
-      {/* Pagination (DaisyUI Join) */}
+      {/* Pagination  */}
       {totalPages > 1 && (
         <div className='flex justify-center mt-10'>
           <div className='join'>
