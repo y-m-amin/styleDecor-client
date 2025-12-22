@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,9 @@ const STATUS_FLOW = [
   'setup_in_progress',
   'completed',
 ];
+
+// default: hide these
+const HIDDEN_BY_DEFAULT = new Set(['completed', 'cancelled']);
 
 const skeletonVariants = {
   hidden: { opacity: 0 },
@@ -38,11 +41,41 @@ function ProjectSkeletonCard() {
   );
 }
 
+const normalizeText = (v) => String(v || '').toLowerCase().trim();
+
+const getLocationText = (loc) => {
+  if (!loc) return '';
+  if (typeof loc === 'string') return loc;
+  if (typeof loc === 'object') {
+    const parts = [loc.address, loc.area, loc.city, loc.state, loc.country].filter(Boolean);
+    return parts.join(', ');
+  }
+  return '';
+};
+
+const dateOnly = (d) => {
+  if (!d) return null;
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return null;
+  // normalize to date-only
+  return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+};
+
 export default function MyProjects() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [savingId, setSavingId] = useState(null);
+
+  // filters (client-side)
+  const [filters, setFilters] = useState({
+    status: 'active', // active | all | specific:<status>
+    q: '',
+    fromDate: '', // yyyy-mm-dd
+    toDate: '',   // yyyy-mm-dd
+    includeCompletedCancelled: false, // explicit toggle
+    dateOrder: 'new', // new | old
+  });
 
   // Prevent skeleton flash
   useEffect(() => {
@@ -72,9 +105,7 @@ export default function MyProjects() {
     setSavingId(id);
     try {
       await axios.patch(`/decorator/bookings/${id}/status`, { status });
-      setProjects((prev) =>
-        prev.map((p) => (p._id === id ? { ...p, status } : p))
-      );
+      setProjects((prev) => prev.map((p) => (p._id === id ? { ...p, status } : p)));
     } catch (err) {
       console.error(err);
     } finally {
@@ -82,16 +113,168 @@ export default function MyProjects() {
     }
   };
 
+  const filteredProjects = useMemo(() => {
+    const q = normalizeText(filters.q);
+    const from = filters.fromDate ? dateOnly(filters.fromDate) : null;
+    const to = filters.toDate ? dateOnly(filters.toDate) : null;
+
+    const shouldHideByDefault = !filters.includeCompletedCancelled;
+
+    const statusMode = filters.status; // active | all | specific:<status>
+    const specificStatus = statusMode?.startsWith('specific:') ? statusMode.split(':')[1] : '';
+
+    return (projects || [])
+      .filter((p) => {
+        // default hide completed/cancelled
+        if (shouldHideByDefault && HIDDEN_BY_DEFAULT.has(p.status)) return false;
+
+        // status filter
+        if (statusMode === 'active') {
+          // active means: everything except completed/cancelled
+          if (HIDDEN_BY_DEFAULT.has(p.status)) return false;
+        } else if (statusMode === 'all') {
+          // no filter
+        } else if (specificStatus) {
+          if (p.status !== specificStatus) return false;
+        }
+
+        // search filter
+        if (q) {
+          const serviceName = normalizeText(p.serviceSnapshot?.service_name || p.service?.name);
+          const ref = normalizeText(p.bookingRef);
+          const loc = normalizeText(getLocationText(p.location));
+          const hay = `${serviceName} ${ref} ${loc}`;
+          if (!hay.includes(q)) return false;
+        }
+
+        // date range filter (bookingDate)
+        const bd = dateOnly(p.bookingDate);
+        if (from && bd && bd < from) return false;
+        if (to && bd && bd > to) return false;
+
+        // if bookingDate missing/invalid and date filters are active: exclude
+        if ((from || to) && !bd) return false;
+
+        return true;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.bookingDate).getTime();
+        const db = new Date(b.bookingDate).getTime();
+        if (filters.dateOrder === 'old') return da - db;
+        return db - da;
+      });
+  }, [projects, filters]);
+
+  const clearFilters = () => {
+    setFilters({
+      status: 'active',
+      q: '',
+      fromDate: '',
+      toDate: '',
+      includeCompletedCancelled: false,
+      dateOrder: 'new',
+    });
+  };
+
+  const statusSelectValue = filters.status;
+
   return (
     <div className="p-4 sm:p-5">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        My Assigned Projects
-      </h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 className="text-xl sm:text-2xl font-bold">My Assigned Projects</h2>
+
+        <button
+          className="btn btn-sm btn-outline"
+          onClick={clearFilters}
+          type="button"
+        >
+          Clear Filters
+        </button>
+      </div>
+
+      {/* FILTER BAR */}
+      <div className="bg-base-200 rounded-lg p-3 mb-4 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* Status */}
+          <select
+            className="select select-sm select-bordered w-full"
+            value={statusSelectValue}
+            onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
+          >
+            <option value="active">Active Only (default)</option>
+            <option value="all">All (including completed/cancelled)</option>
+
+            <option disabled>────────</option>
+            {STATUS_FLOW.map((s) => (
+              <option key={s} value={`specific:${s}`}>
+                {s.replace(/_/g, ' ')}
+              </option>
+            ))}
+            <option value="specific:cancelled">cancelled</option>
+          </select>
+
+          {/* Search */}
+          <input
+            className="input input-sm input-bordered w-full"
+            placeholder="Search service / ref / location…"
+            value={filters.q}
+            onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
+          />
+
+          {/* From date */}
+          <input
+            type="date"
+            className="input input-sm input-bordered w-full"
+            value={filters.fromDate}
+            onChange={(e) => setFilters((f) => ({ ...f, fromDate: e.target.value }))}
+          />
+
+          {/* To date */}
+          <input
+            type="date"
+            className="input input-sm input-bordered w-full"
+            value={filters.toDate}
+            onChange={(e) => setFilters((f) => ({ ...f, toDate: e.target.value }))}
+          />
+
+          {/* Date order + toggle */}
+          <div className="flex gap-2">
+            <select
+              className="select select-sm select-bordered w-full"
+              value={filters.dateOrder}
+              onChange={(e) => setFilters((f) => ({ ...f, dateOrder: e.target.value }))}
+            >
+              <option value="new">Newest</option>
+              <option value="old">Oldest</option>
+            </select>
+
+            <label className="flex items-center gap-2 text-sm px-2 rounded-md bg-base-100 border border-base-300">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-sm"
+                checked={filters.includeCompletedCancelled}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, includeCompletedCancelled: e.target.checked }))
+                }
+              />
+              <span className="whitespace-nowrap">Show done</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="text-xs opacity-70 mt-2">
+          Showing <b>{filteredProjects.length}</b> of <b>{projects.length}</b> projects
+        </div>
+      </div>
 
       {/* EMPTY STATE */}
       {!loading && projects.length === 0 && (
+        <div className="text-center text-gray-500 py-10">No project assigned yet</div>
+      )}
+
+      {!loading && projects.length > 0 && filteredProjects.length === 0 && (
         <div className="text-center text-gray-500 py-10">
-          No project assigned yet
+          No projects match your filters
         </div>
       )}
 
@@ -114,7 +297,7 @@ export default function MyProjects() {
 
         <AnimatePresence>
           {!loading &&
-            projects.map((p) => (
+            filteredProjects.map((p) => (
               <motion.div
                 key={p._id}
                 variants={cardVariants}
@@ -127,18 +310,15 @@ export default function MyProjects() {
                   {p.serviceSnapshot?.service_name || p.service?.name}
                 </h3>
 
-                <p className="text-sm text-gray-500 mt-1">
-                  #{p.bookingRef}
-                </p>
+                <p className="text-sm text-gray-500 mt-1">#{p.bookingRef}</p>
 
                 <p className="mt-3 text-sm">
-                  <b>Date:</b>{' '}
-                  {new Date(p.bookingDate).toLocaleDateString()}
+                  <b>Date:</b> {new Date(p.bookingDate).toLocaleDateString()}
                 </p>
 
                 <p className="text-sm text-gray-600">
                   {typeof p.location === 'object'
-                    ? `${p.location.city}, ${p.location.country}`
+                    ? getLocationText(p.location)
                     : p.location}
                 </p>
 
@@ -151,12 +331,8 @@ export default function MyProjects() {
                   <select
                     className="select select-sm select-bordered mt-auto w-full"
                     value={p.status}
-                    disabled={
-                      savingId === p._id || p.status === 'completed'
-                    }
-                    onChange={(e) =>
-                      updateStatus(p._id, e.target.value)
-                    }
+                    disabled={savingId === p._id || p.status === 'completed'}
+                    onChange={(e) => updateStatus(p._id, e.target.value)}
                   >
                     {STATUS_FLOW.map((s) => (
                       <option key={s} value={s}>

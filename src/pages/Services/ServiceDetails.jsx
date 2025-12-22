@@ -1,9 +1,13 @@
-import { useContext, useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useContext, useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate, Link } from "react-router";
 import axios from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import Spinner from "../../Components/Spinner";
+
+const formatBDT = (n) => `৳${Number(n || 0).toLocaleString()}`;
+
+const sanitizeCoupon = (code) => (code || "").trim().toUpperCase();
 
 export default function ServiceDetails() {
   const { id } = useParams();
@@ -17,58 +21,70 @@ export default function ServiceDetails() {
   const [serviceMode, setServiceMode] = useState("offline");
   const [location, setLocation] = useState("");
 
-  const [customerEmail, setCustomerEmail] = useState(user?.email || '');
-const [customerPhone, setCustomerPhone] = useState('');
-const [couponCode, setCouponCode] = useState('');
-const [pricePreview, setPricePreview] = useState(null);
+  const [customerEmail, setCustomerEmail] = useState(user?.email || "");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [couponCode, setCouponCode] = useState("");
 
-const TEST_COUPONS = {
-  NEWUSER10: { type: 'percent', value: 10 },
-  FLAT500: { type: 'flat', value: 500 },
-};
+  const [isBooking, setIsBooking] = useState(false);
 
-const calculatePreview = () => {
-  if (!couponCode || !TEST_COUPONS[couponCode]) {
-    setPricePreview(null);
-    return;
-  }
+  // Only for frontend preview. Must match backend COUPONS or booking will fail.
+  const TEST_COUPONS = useMemo(
+    () => ({
+      NEWUSER10: { type: "percent", value: 10 },
+      FLAT500: { type: "flat", value: 500 },
+    }),
+    []
+  );
 
-  const coupon = TEST_COUPONS[couponCode];
-  let discount = 0;
+  const couponNormalized = sanitizeCoupon(couponCode);
 
-  if (coupon.type === 'percent') {
-    discount = Math.round((service.cost * coupon.value) / 100);
-  } else {
-    discount = coupon.value;
-  }
+  const pricePreview = useMemo(() => {
+    if (!service) return null;
 
-  setPricePreview({
-    original: service.cost,
-    discount,
-    final: service.cost - discount,
-  });
-};
+    const original = Number(service.cost || 0);
+    const coupon = couponNormalized ? TEST_COUPONS[couponNormalized] : null;
 
-useEffect(() => {
-  if (service) calculatePreview();
-}, [couponCode, service]);
+    // If user typed a coupon but it's not in preview list, we still show final = original,
+    
+    if (!coupon) {
+      return {
+        original,
+        discount: 0,
+        final: original,
+        isKnownCoupon: !couponNormalized, // true if empty, false if typed unknown
+      };
+    }
 
+    let discount = 0;
+    if (coupon.type === "percent") {
+      discount = Math.round(original * (coupon.value / 100));
+    } else {
+      discount = Number(coupon.value || 0);
+    }
 
+    // clamp discount so final never goes negative
+    discount = Math.min(discount, original);
 
-   const fetchService = async () => {
-      try {
-        const res = await axios.get(`/services/${id}`);
-        setService(res.data);
-      } catch (err) {
-        toast.error("Failed to load service");
-      } finally {
-        setLoading(false);
-      }
+    return {
+      original,
+      discount,
+      final: original - discount,
+      isKnownCoupon: true,
     };
+  }, [service, couponNormalized, TEST_COUPONS]);
+
+  const fetchService = async () => {
+    try {
+      const res = await axios.get(`/services/${id}`);
+      setService(res.data);
+    } catch (err) {
+      toast.error("Failed to load service");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-   
-
     fetchService();
   }, [id]);
 
@@ -76,26 +92,29 @@ useEffect(() => {
     if (!user) return navigate("/login", { state: { from: `/services/${id}` } });
     if (role !== "user") return toast.error("Only customers can book services");
     if (!bookingDate) return toast.error("Please choose a booking date");
+    if (!customerEmail || !customerPhone) return toast.error("Email and phone are required");
 
+    const couponToSend = couponNormalized || null;
+
+    setIsBooking(true);
     try {
-      if (!customerEmail || !customerPhone) {
-  return toast.error('Email and phone are required');
-}
-
-      await axios.post('/bookings', {
-  serviceId: id,
-  bookingDate,
-  serviceMode,
-  location,
-  customerEmail,
-  customerPhone,
-  couponCode: couponCode || null,
-});
+      await axios.post("/bookings", {
+        serviceId: id,
+        bookingDate,
+        serviceMode,
+        location,
+        customerEmail,
+        customerPhone,
+        couponCode: couponToSend, 
+      });
 
       toast.success("Booking created! Check your My Bookings");
       navigate("/dashboard/my-bookings");
     } catch (err) {
-      toast.error("Failed to book service");
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to book service");
+    } finally {
+      setIsBooking(false);
     }
   };
 
@@ -113,7 +132,9 @@ useEffect(() => {
         <div className="p-6 space-y-4">
           <h1 className="text-2xl font-bold text-gray-800">{service.service_name}</h1>
           <div className="flex items-center gap-4">
-            <span className="text-lg text-blue-600 font-semibold">BDT {service.cost}</span>
+            <span className="text-lg text-blue-600 font-semibold">
+              {formatBDT(service.cost)}
+            </span>
             <span className="text-sm text-gray-500 uppercase">{service.unit} units</span>
           </div>
           <p className="text-gray-600 leading-relaxed">{service.description}</p>
@@ -160,56 +181,66 @@ useEffect(() => {
           )}
 
           <div>
-  <label className="block text-sm font-medium mb-1">Contact Email</label>
-  <input
-    type="email"
-    value={customerEmail}
-    onChange={(e) => setCustomerEmail(e.target.value)}
-    className="input input-bordered w-full"
-  />
-</div>
+            <label className="block text-sm font-medium mb-1">Contact Email</label>
+            <input
+              type="email"
+              value={customerEmail}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+              className="input input-bordered w-full"
+            />
+          </div>
 
-<div>
-  <label className="block text-sm font-medium mb-1">Phone Number</label>
-  <input
-    type="text"
-    value={customerPhone}
-    onChange={(e) => setCustomerPhone(e.target.value)}
-    className="input input-bordered w-full"
-  />
-</div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Phone Number</label>
+            <input
+              type="text"
+              value={customerPhone}
+              onChange={(e) => setCustomerPhone(e.target.value)}
+              className="input input-bordered w-full"
+            />
+          </div>
 
-<div>
-  <label className="block text-sm font-medium mb-1">Coupon Code (optional)</label>
-  <input
-    type="text"
-    value={couponCode}
-    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-    className="input input-bordered w-full"
-    placeholder="e.g. NEWUSER10"
-  />
-</div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Coupon Code (optional)</label>
+            <input
+              type="text"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+              className="input input-bordered w-full"
+              placeholder="e.g. NEWUSER10"
+            />
+            {couponNormalized && pricePreview && pricePreview.isKnownCoupon === false && (
+              <p className="text-xs text-warning mt-1">
+                Coupon preview not available. It will be validated when you book.
+              </p>
+            )}
+          </div>
 
-{pricePreview && (
-  <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
-    <p>Original: ৳{pricePreview.original}</p>
-    <p className="text-green-600">
-      Discount: −৳{pricePreview.discount}
-    </p>
-    <p className="font-semibold">
-      Final Price: ৳{pricePreview.final}
-    </p>
-  </div>
-)}
+          {/*   price box (final price included) */}
+          {pricePreview && (
+            <div className="bg-base-100 border border-base-300 rounded p-3 text-sm">
+              <p>Original: {formatBDT(pricePreview.original)}</p>
 
+              {pricePreview.discount > 0 ? (
+                <p className="text-green-600">
+                  Discount: −{formatBDT(pricePreview.discount)}
+                </p>
+              ) : (
+                <p className="opacity-70">Discount: {formatBDT(0)}</p>
+              )}
 
-
+              <p className="font-semibold">
+                Final Price: {formatBDT(pricePreview.final)}
+              </p>
+            </div>
+          )}
 
           <button
             onClick={handleBook}
             className="btn btn-primary w-full"
+            disabled={isBooking}
           >
-            Book Now
+            {isBooking ? "Booking..." : "Book Now"}
           </button>
         </div>
       ) : user ? (
