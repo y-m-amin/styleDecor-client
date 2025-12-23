@@ -13,6 +13,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [decorators, setDecorators] = useState([]);
 
+  const [zones, setZones] = useState([]);
+  const [filteredZones, setFilteredZones] = useState([]);
+
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +46,19 @@ export default function Home() {
       }
     };
     fetchServices();
+  }, []);
+
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const res = await axios.get('/coverage-zones');
+        setZones(res.data.zones);
+        setFilteredZones(res.data.zones);
+      } catch (err) {
+        console.error('Failed to load coverage zones', err);
+      }
+    };
+    fetchZones();
   }, []);
 
   return (
@@ -116,7 +132,16 @@ export default function Home() {
 
       <section className='container mx-auto px-4 py-10'>
         <h3 className='text-xl font-semibold mb-4'>Service Coverage Map</h3>
-        <MapComponent />
+
+        <MapComponent
+          center={[23.8103, 90.4125]}
+          zoom={7}
+          zones={filteredZones}
+          markers={filteredZones.map((z) => ({
+            position: [z.center.lat, z.center.lng],
+            popupText: z.name,
+          }))}
+        />
       </section>
     </div>
   );
