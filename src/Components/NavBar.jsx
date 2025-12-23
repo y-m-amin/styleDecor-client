@@ -20,6 +20,17 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
+  const avatarBase = user?.photoURL || '/default-avatar.png';
+  const avatarVersion = user?.updatedAt
+    ? new Date(user.updatedAt).getTime()
+    : '0';
+
+  const avatarSrc =
+    avatarBase.includes('?')
+      ? `${avatarBase}&v=${avatarVersion}`
+      : `${avatarBase}?v=${avatarVersion}`;
+
+
   const handleLogout = async () => {
     await logOut();
     navigate('/');
@@ -99,9 +110,14 @@ export default function Navbar() {
               className='flex items-center gap-2 cursor-pointer'
             >
               <img
-                src={user.photoURL || '/default-avatar.png'}
-                className='w-9 h-9 rounded-full border object-cover'
+                key={avatarSrc}               
+                src={avatarSrc}
+                onError={(e) => {
+                  e.currentTarget.src = '/default-avatar.png';
+                }}
+                className="w-9 h-9 rounded-full border object-cover"
               />
+
               <span className='text-sm hidden md:block'>
                 {user.displayName || user.email}
               </span>

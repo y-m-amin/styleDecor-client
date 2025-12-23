@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import Navbar from '../Components/NavBar';
 import { AuthContext } from '../context/AuthContext';
@@ -6,6 +6,10 @@ import { AuthContext } from '../context/AuthContext';
 export default function DashboardLayout() {
   const { role, decoratorStatus } = useContext(AuthContext);
   const location = useLocation();
+
+  useEffect(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, []);
 
   /**
    *  dashboard navigation

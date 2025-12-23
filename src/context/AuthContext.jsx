@@ -1,4 +1,4 @@
-// src/context/AuthContext.jsx
+
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
@@ -34,15 +34,10 @@ const AuthProvider = ({ children }) => {
 
       //  m                       Fetch user info using JWT
       const res = await axios.get('/auth/me');
+setUser(res.data);
+setRole(res.data.role);
+setDecoratorStatus(res.data.decoratorStatus);
 
-      setUser({
-        email: res.data.email,
-        displayName: res.data.displayName,
-        photoURL: res.data.photoURL,
-      });
-
-      setRole(res.data.role);
-      setDecoratorStatus(res.data.decoratorStatus);
     } catch (err) {
       console.error('Error fetching user:', err);
       setUser(null);
@@ -92,22 +87,22 @@ const AuthProvider = ({ children }) => {
   };
 
   const signInWithGoogle = async () => {
-    setLoading(true);
-    const result = await signInWithPopup(auth, googleProvider);
-    const { email, displayName, photoURL } = result.user;
+  setLoading(true);
+  const result = await signInWithPopup(auth, googleProvider);
+  const { email, displayName, photoURL } = result.user;
 
-    try {
-      await axios.post('/users', {
-        email,
-        displayName,
-        photoURL,
-      });
-    } catch (err) {
-      // ignore if user exists
-    }
+  try {
+    await axios.post('/users', { email, displayName, photoURL });
+  } catch {}
 
-    return result;
-  };
+  
+  await fetchMe(result.user);
+
+  setLoading(false);
+  return result;
+};
+
+
 
   const logOut = () => {
     localStorage.removeItem('access-token');
