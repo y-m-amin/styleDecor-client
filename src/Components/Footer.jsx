@@ -1,6 +1,6 @@
 import { FaFacebookSquare, FaLinkedin } from 'react-icons/fa';
 import { IoLogoInstagram } from 'react-icons/io5';
-import { FaLinkedin } from "react-icons/fa";
+
 
 export default function Footer() {
   return (
