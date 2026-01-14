@@ -1,3 +1,7 @@
+import { FaFacebookSquare, FaLinkedin } from 'react-icons/fa';
+import { IoLogoInstagram } from 'react-icons/io5';
+
+
 export default function Footer() {
   return (
     <footer className='bg-base-200 border-t mt-16'>
@@ -25,14 +29,17 @@ export default function Footer() {
         <div>
           <h5 className='font-semibold mb-2'>Follow Us</h5>
           <div className='flex gap-4 text-sm opacity-70'>
-            <a href='#' className='hover:text-primary'>
-              Facebook
+            <a
+              href='https://www.facebook.com'
+              className='hover:text-primary text-2xl'
+            >
+              <FaFacebookSquare />
             </a>
-            <a href='#' className='hover:text-primary'>
-              Instagram
+            <a href='https://www.instagram.com' className='hover:text-primary text-2xl'>
+              <IoLogoInstagram />
             </a>
-            <a href='#' className='hover:text-primary'>
-              LinkedIn
+            <a href='https://www.linkedin.com/' className='hover:text-primary text-2xl'>
+              <FaLinkedin />
             </a>
           </div>
         </div>
