@@ -104,8 +104,11 @@ setCompletedJobs(completedRes.data);
 
           <div className="flex items-center gap-2 mt-2">
             <span className="badge badge-primary">
-              ⭐ {decorator.rating ?? 'N/A'}
-            </span>
+  ⭐ {decorator.rating != null && !Number.isNaN(Number(decorator.rating))
+    ? Number(decorator.rating).toFixed(2)
+    : "N/A"}
+</span>
+
             <span className="text-sm text-gray-500">
               ({decorator.ratingCount || 0} reviews)
             </span>

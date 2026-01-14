@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import axios from '../../api/axios';
 import { toast } from 'react-toastify';
+import { updateProfile } from 'firebase/auth';
+import { auth } from '../../firebase/firebase.init'; 
+
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/2kRzF5H/user.png';
 
@@ -41,7 +44,7 @@ const MyProfile = () => {
     fetchProfile();
   }, []);
 
-  // hydrate form whenever profile loads/changes (fixes "older data not preloaded")
+  
   useEffect(() => {
     if (!profile) return;
 
@@ -137,10 +140,17 @@ const MyProfile = () => {
         address: String(form.address || '').trim(),
       });
 
-      toast.success('Profile updated!');
+      if (auth.currentUser) {
+      await updateProfile(auth.currentUser, { photoURL });
+    }
+
+    //refresh UI
+    await refreshUser();
+
       await fetchProfile();
       setIsEditing(false);
       setPhotoFile(null);
+      toast.success('Profile updated!');
       setPhotoPreview('');
     } catch (err) {
       console.error(err);
