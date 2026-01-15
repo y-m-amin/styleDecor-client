@@ -17,6 +17,8 @@ import PaymentHistory from '../dashboard/user/PaymentHistory';
 import MainLayout from '../layouts/MainLayout';
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
+import BlogDetails from '../pages/Blogs/BlogDetails';
+import Blogs from '../pages/Blogs/Blogs';
 import DecoratorProfilePub from '../pages/Decorator/DecoratorProfilePub';
 import Forbidden from '../pages/Error/Forbidden';
 import GlobalError from '../pages/Error/GlobalError';
@@ -24,6 +26,7 @@ import Home from '../pages/Home/Home';
 import ServiceCoverageMap from '../pages/Map/ServiceCoverageMap';
 import About from '../pages/Misc/About';
 import Contact from '../pages/Misc/Contact';
+import Support from '../pages/Misc/Support';
 import PaymentCancelled from '../pages/Payment/PaymentCancelled';
 import PaymentReceipt from '../pages/Payment/PaymentReceipt';
 import PaymentSuccess from '../pages/Payment/PaymentSuccess';
@@ -32,8 +35,6 @@ import ServicesList from '../pages/Services/ServiceList';
 import AdminRoute from './AdminRoute';
 import DecoratorRoute from './DecoratorRoute';
 import PrivateRoute from './PrivateRoute';
-import Blogs from '../pages/Blogs/Blogs';
-import BlogDetails from '../pages/Blogs/BlogDetails';
 
 export const router = createBrowserRouter([
   {
@@ -46,14 +47,11 @@ export const router = createBrowserRouter([
 
       {
         path: '/services/:id',
-        element: (
-          
-            <ServiceDetails />
-          
-        ),
+        element: <ServiceDetails />,
       },
-      {path:"/blogs" ,element:<Blogs />},
-      {path:"/blogs/:id", element:<BlogDetails /> },
+      { path: '/blogs', element: <Blogs /> },
+      { path: '/support', element: <Support /> },
+      { path: '/blogs/:id', element: <BlogDetails /> },
       { path: '/forbidden', element: <Forbidden /> },
 
       { path: '/map', element: <ServiceCoverageMap /> },

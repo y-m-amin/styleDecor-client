@@ -6,6 +6,31 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthContext } from '../../context/AuthContext';
 
+const daisyToast = {
+  success: (msg) =>
+    toast(`✅ ${msg}`, {
+      className: 'bg-base-200 text-primary shadow-lg',
+      progressClassName: 'bg-success-content/30',
+      theme: 'dark',
+    }),
+
+  error: (msg) =>
+    toast(`❌ ${msg}`, {
+      className: 'bg-error text-error-content shadow-lg',
+      progressClassName: 'bg-error-content/30',
+
+      theme: 'dark',
+    }),
+
+  info: (msg) =>
+    toast(`ℹ️ ${msg}`, {
+      className: 'bg-info text-info-content shadow-lg',
+      progressClassName: 'bg-info-content/30',
+
+      theme: 'dark',
+    }),
+};
+
 export default function Login() {
   const { signInUser, signInWithGoogle } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
@@ -25,21 +50,21 @@ export default function Login() {
     try {
       const { email, password } = data;
       await signInUser(email, password);
-      toast.success('Login successful!');
+      daisyToast.success('Login successful!');
       setTimeout(() => navigate(redirectTo, { replace: true }), 900);
       reset();
     } catch {
-      toast.error('Invalid email or password');
+      daisyToast.error('Invalid email or password');
     }
   };
 
   const handleGoogle = async () => {
     try {
       await signInWithGoogle();
-      toast.success('Logged in with Google!');
+      daisyToast.success('Logged in with Google!');
       setTimeout(() => navigate(redirectTo, { replace: true }), 900);
     } catch {
-      toast.error('Google login failed');
+      daisyToast.error('Google login failed');
     }
   };
 
@@ -105,14 +130,13 @@ export default function Login() {
                   className='input input-bordered w-full pr-10'
                   {...register('password', { required: 'Password required' })}
                 />
-               <button
-  type="button"
-  tabIndex={-1}
-  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 opacity-60 hover:opacity-100"
-  onMouseDown={(e) => e.preventDefault()}
-  onClick={() => setShowPassword((s) => !s)}
->
-
+                <button
+                  type='button'
+                  tabIndex={-1}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 z-10 opacity-60 hover:opacity-100'
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowPassword((s) => !s)}
+                >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
@@ -140,7 +164,14 @@ export default function Login() {
         </div>
       </div>
 
-      <ToastContainer position='top-center' theme='colored' />
+      <ToastContainer
+        position='top-center'
+        autoClose={2500}
+        hideProgressBar={false}
+        closeButton={false}
+        pauseOnHover
+        theme='dark'
+      />
     </div>
   );
 }

@@ -6,6 +6,32 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthContext } from '../../context/AuthContext';
 
+const daisyToast = {
+  success: (msg) =>
+    toast(msg, {
+      className: 'bg-base-200 text-primary shadow-lg',
+      progressClassName: 'bg-success-content/30',
+      icon: '✅',
+      theme: 'dark',
+    }),
+
+  error: (msg) =>
+    toast(msg, {
+      className: 'bg-error text-error-content shadow-lg',
+      progressClassName: 'bg-error-content/30',
+      icon: '❌',
+      theme: 'dark',
+    }),
+
+  info: (msg) =>
+    toast(msg, {
+      className: 'bg-info text-info-content shadow-lg',
+      progressClassName: 'bg-info-content/30',
+      icon: 'ℹ️',
+      theme: 'dark',
+    }),
+};
+
 export default function Register() {
   const { createUser, signInWithGoogle } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
@@ -28,21 +54,21 @@ export default function Register() {
         photoFile: photo?.[0] || null,
       });
 
-      toast.success('Registration successful!');
+      daisyToast.success('Registration successful!');
       setTimeout(() => navigate('/'), 1200);
       reset();
     } catch (err) {
-      toast.error(err.message || 'Registration failed');
+      daisyToast.error(err.message || 'Registration failed');
     }
   };
 
   const handleGoogleRegister = async () => {
     try {
       await signInWithGoogle();
-      toast.success('Registered with Google!');
+      daisyToast.success('Registered with Google!');
       setTimeout(() => navigate('/'), 1200);
     } catch {
-      toast.error('Google authentication failed');
+      daisyToast.error('Google authentication failed');
     }
   };
 
@@ -123,13 +149,12 @@ export default function Register() {
                   {...register('password')}
                 />
                 <button
-  type="button"
-  tabIndex={-1}
-  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 opacity-60 hover:opacity-100"
-  onMouseDown={(e) => e.preventDefault()}
-  onClick={() => setShowPassword((p) => !p)}
->
-
+                  type='button'
+                  tabIndex={-1}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 z-10 opacity-60 hover:opacity-100'
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowPassword((p) => !p)}
+                >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
@@ -156,7 +181,14 @@ export default function Register() {
         </div>
       </div>
 
-      <ToastContainer position='top-center' theme='colored' />
+      <ToastContainer
+        position='top-center'
+        autoClose={2500}
+        hideProgressBar={false}
+        closeButton={false}
+        pauseOnHover
+        theme='dark'
+      />
     </div>
   );
 }
