@@ -45,9 +45,9 @@ export const router = createBrowserRouter([
       {
         path: '/services/:id',
         element: (
-          <PrivateRoute>
+          
             <ServiceDetails />
-          </PrivateRoute>
+          
         ),
       },
       { path: '/forbidden', element: <Forbidden /> },

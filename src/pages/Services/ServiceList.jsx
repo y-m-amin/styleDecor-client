@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+ import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router';
 import axios from '../../api/axios';
 import ServiceCard from '../../components/ServiceCard';
 import SkeletonCard from '../../components/SkeletonCard';
 
 export default function ServicesList() {
+  const location = useLocation();
+
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,15 +45,41 @@ export default function ServicesList() {
     }
   };
 
-  //  FETCH WHEN PAGE OR FILTERS CHANGE
+  // fetch
+useEffect(() => {
+  axios.get('/services/categories').then((res) => {
+    const raw = res.data || [];
+
+    // raw is [{label,value}] now
+    const normalized = raw
+      .map((c) => {
+        if (typeof c === 'string') return { label: c, value: c };
+        if (c && typeof c === 'object')
+          return { label: String(c.label ?? c.value ?? ''), value: String(c.value ?? c.label ?? '') };
+        return null;
+      })
+      .filter((x) => x?.value);
+
+    // dedupe by value
+    const seen = new Set();
+    const unique = normalized.filter((x) => (seen.has(x.value) ? false : (seen.add(x.value), true)));
+
+    setCategories(unique);
+  });
+}, []);
+
+  //  Read query param on route change
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cat = params.get('category') || '';
+    setCategory(cat);
+    setPage(1);
+  }, [location.search]);
+
+  //  Fetch when page changes OR when filters change
   useEffect(() => {
     fetchServices();
-  }, [page]);
-
-  //  RESET PAGE WHEN FILTERS CHANGE
-  useEffect(() => {
-    setPage(1);
-  }, [query, category, minCost, maxCost]);
+  }, [page, query, category, minCost, maxCost]);
 
   // load categories once
   useEffect(() => {
@@ -85,11 +114,12 @@ export default function ServicesList() {
         >
           <option value=''>All Categories</option>
           {categories.map((c) => (
-            <option key={c} value={c}>
-              {c}
+            <option key={c.value} value={c.value}>
+              {c.label}
             </option>
           ))}
         </select>
+
 
         <input
           type='number'
@@ -128,13 +158,13 @@ export default function ServicesList() {
 
       {/* Services Grid */}
       {loading ? (
-        <div className='grid sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+        <div className='grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6'>
           {[...Array(9)].map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
       ) : (
-        <div className='grid sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+        <div className='grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6'>
           {services.length === 0 ? (
             <div className='col-span-full text-center text-gray-500'>
               No services found
@@ -145,7 +175,7 @@ export default function ServicesList() {
         </div>
       )}
 
-      {/* Pagination  */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className='flex justify-center mt-10'>
           <div className='join'>

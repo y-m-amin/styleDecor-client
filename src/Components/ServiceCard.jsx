@@ -56,11 +56,11 @@ export default function ServiceCard({ service }) {
   const { user, role } = useContext(AuthContext);
 
   const handleBookNow = () => {
-    if (!user) {
-      return navigate("/login", {
-        state: { from: `/services/${service._id}` },
-      });
-    }
+    // if (!user) {
+    //   return navigate("/login", {
+    //     state: { from: `/services/${service._id}` },
+    //   });
+    // }
     navigate(`/services/${service._id}`);
   };
 
@@ -92,7 +92,7 @@ export default function ServiceCard({ service }) {
 
           <button
             onClick={handleBookNow}
-            className="text-sm px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="text-sm px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary transition-colors"
           >
             {user && role === "user" ? "View & Book" : "View"}
           </button>
