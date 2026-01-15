@@ -1,4 +1,4 @@
- import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import axios from '../../api/axios';
 import ServiceCard from '../../components/ServiceCard';
@@ -19,7 +19,7 @@ export default function ServicesList() {
 
   // pagination
   const [page, setPage] = useState(1);
-  const limit = 9;
+  const limit = 12;
   const [totalPages, setTotalPages] = useState(1);
 
   const fetchServices = async () => {
@@ -46,27 +46,32 @@ export default function ServicesList() {
   };
 
   // fetch
-useEffect(() => {
-  axios.get('/services/categories').then((res) => {
-    const raw = res.data || [];
+  useEffect(() => {
+    axios.get('/services/categories').then((res) => {
+      const raw = res.data || [];
 
-    // raw is [{label,value}] now
-    const normalized = raw
-      .map((c) => {
-        if (typeof c === 'string') return { label: c, value: c };
-        if (c && typeof c === 'object')
-          return { label: String(c.label ?? c.value ?? ''), value: String(c.value ?? c.label ?? '') };
-        return null;
-      })
-      .filter((x) => x?.value);
+      // raw is [{label,value}] now
+      const normalized = raw
+        .map((c) => {
+          if (typeof c === 'string') return { label: c, value: c };
+          if (c && typeof c === 'object')
+            return {
+              label: String(c.label ?? c.value ?? ''),
+              value: String(c.value ?? c.label ?? ''),
+            };
+          return null;
+        })
+        .filter((x) => x?.value);
 
-    // dedupe by value
-    const seen = new Set();
-    const unique = normalized.filter((x) => (seen.has(x.value) ? false : (seen.add(x.value), true)));
+      // dedupe by value
+      const seen = new Set();
+      const unique = normalized.filter((x) =>
+        seen.has(x.value) ? false : (seen.add(x.value), true)
+      );
 
-    setCategories(unique);
-  });
-}, []);
+      setCategories(unique);
+    });
+  }, []);
 
   //  Read query param on route change
   useEffect(() => {
@@ -120,7 +125,6 @@ useEffect(() => {
           ))}
         </select>
 
-
         <input
           type='number'
           className='input input-bordered'
@@ -159,7 +163,7 @@ useEffect(() => {
       {/* Services Grid */}
       {loading ? (
         <div className='grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6'>
-          {[...Array(9)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>

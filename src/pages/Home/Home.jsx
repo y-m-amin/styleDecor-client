@@ -6,11 +6,11 @@ import MapComponent from '../../components/MapComponent';
 import ServiceCard from '../../components/ServiceCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import { SmoothScrollProvider } from '../../Components/SmoothScrollProvider';
+import CategoriesSection from './CategoriesSection';
 import Hero from './Hero';
 import HighlightsSection from './HighlightsSection';
 import HowItWorksSection from './HowItWorksSection';
 import Statistics from './Statistics';
-import CategoriesSection from './CategoriesSection';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
@@ -292,53 +292,13 @@ export default function Home() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [decorators, setDecorators] = useState([]);
+  const [zones, setZones] = useState([]);
+  const [filteredZones, setFilteredZones] = useState([]);
 
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterMsg, setNewsletterMsg] = useState('');
 
   const navigate = useNavigate();
-
-  const categories = useMemo(
-    () => [
-      {
-        title: 'Wedding & Reception',
-        desc: 'Elegant floral, stage, aisle, and lighting setups.',
-        icon: '💍',
-        href: '/services?category=wedding',
-      },
-      {
-        title: 'Birthday & Kids Party',
-        desc: 'Balloon arches, themes, backdrops, table decor.',
-        icon: '🎉',
-        href: '/services?category=birthday',
-      },
-      {
-        title: 'Corporate Events',
-        desc: 'Branding, stage, booth, signage, premium ambience.',
-        icon: '🏢',
-        href: '/services?category=corporate',
-      },
-      {
-        title: 'Home & Festive Decor',
-        desc: 'Eid, Puja, Christmas, home makeovers.',
-        icon: '🏠',
-        href: '/services?category=home',
-      },
-      {
-        title: 'Photography Setups',
-        desc: 'Photo booth, props, LED walls, themed corners.',
-        icon: '📸',
-        href: '/services?category=photo',
-      },
-      {
-        title: 'Catering & Add-ons',
-        desc: 'Food, tables, chairs, sound, and more.',
-        icon: '🍽️',
-        href: '/services?category=addons',
-      },
-    ],
-    []
-  );
 
   const stats = useMemo(
     () => [
@@ -430,20 +390,6 @@ export default function Home() {
     []
   );
 
-  const partners = useMemo(
-    () => [
-      'Event Venues',
-      'Catering Teams',
-      'Photography',
-      'Sound & Lighting',
-      'Florists',
-      'Printing',
-      'DJ & Entertainment',
-      'Rentals',
-    ],
-    []
-  );
-
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -463,7 +409,7 @@ export default function Home() {
     const fetchServices = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('/services', { params: { limit: 6 } });
+        const res = await axios.get('/services', { params: { limit: 8 } });
         setServices(res.data.services || []);
       } catch (err) {
         console.error(err);
@@ -473,6 +419,19 @@ export default function Home() {
     };
 
     fetchServices();
+  }, []);
+
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const res = await axios.get('/coverage-zones');
+        setZones(res.data.zones);
+        setFilteredZones(res.data.zones);
+      } catch (err) {
+        console.error('Failed to load coverage zones', err);
+      }
+    };
+    fetchZones();
   }, []);
 
   const onNewsletterSubmit = (e) => {
@@ -566,12 +525,6 @@ export default function Home() {
                 title='Top Decorators'
                 desc='Discover pros with standout reviews and specialties.'
               />
-              <button
-                onClick={() => navigate('/decorators')}
-                className='btn btn-outline btn-sm md:btn-md'
-              >
-                See All →
-              </button>
             </div>
 
             {decorators.length === 0 ? (
@@ -612,12 +565,6 @@ export default function Home() {
                       <Badge>Experience</Badge>
                       <Badge>Rating</Badge>
                     </div>
-                    <button
-                      onClick={() => navigate('/decorators')}
-                      className='mt-6 btn btn-primary btn-sm md:btn-md'
-                    >
-                      Browse all decorators
-                    </button>
                   </div>
                 </motion.div>
 
@@ -895,9 +842,7 @@ export default function Home() {
           </div>
         </section>
 
-        
-
-        {/* 13) Map (keep your MapComponent, but wrap with nicer layout + small animation) */}
+        {/* 13) Map */}
         <section className='py-14 bg-base-200'>
           <div className='container mx-auto px-4'>
             <div className='flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6'>
@@ -923,7 +868,15 @@ export default function Home() {
               transition={{ duration: 0.45 }}
               className='rounded-2xl border border-base-300 bg-base-100 p-3 md:p-4 shadow-sm'
             >
-              <MapComponent />
+              <MapComponent
+                center={[23.8103, 90.4125]}
+                zoom={7}
+                zones={filteredZones}
+                markers={filteredZones.map((z) => ({
+                  position: [z.center.lat, z.center.lng],
+                  popupText: z.name,
+                }))}
+              />
             </motion.div>
           </div>
         </section>

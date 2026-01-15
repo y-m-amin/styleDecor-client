@@ -17,8 +17,13 @@ export default function BlogDetails() {
       <div className='container mx-auto px-4 py-10'>
         <div className='rounded-2xl border border-base-300 bg-base-100 p-8 text-center'>
           <div className='text-xl font-extrabold'>Blog not found</div>
-          <p className='mt-2 text-gray-500'>The blog you’re looking for doesn’t exist.</p>
-          <button className='btn btn-primary mt-5' onClick={() => navigate('/blogs')}>
+          <p className='mt-2 text-gray-500'>
+            The blog you’re looking for doesn’t exist.
+          </p>
+          <button
+            className='btn btn-primary mt-5'
+            onClick={() => navigate('/blogs')}
+          >
             Back to Blogs
           </button>
         </div>
@@ -29,12 +34,19 @@ export default function BlogDetails() {
   return (
     <div className='container mx-auto px-4 py-10'>
       <div className='mb-6 text-sm text-gray-500'>
-        <Link to='/blogs' className='hover:underline'>Blogs</Link> / {blog.title}
+        <Link to='/blogs' className='hover:underline'>
+          Blogs
+        </Link>{' '}
+        / {blog.title}
       </div>
 
       <div className='rounded-2xl border border-base-300 bg-base-100 overflow-hidden'>
         <div className='h-56 md:h-80 w-full overflow-hidden'>
-          <img src={blog.cover} alt={blog.title} className='h-full w-full object-cover' />
+          <img
+            src={blog.cover}
+            alt={blog.title}
+            className='h-full w-full object-cover'
+          />
         </div>
 
         <div className='p-6 md:p-10'>
@@ -57,25 +69,34 @@ export default function BlogDetails() {
             {blog.date} • {blog.readTime}
           </div>
 
-          <div className='mt-6 space-y-4 text-base leading-relaxed'>
+          <div className='mt-6 space-y-4 text-white leading-relaxed'>
             {blog.content?.map((block, idx) => {
               if (block.type === 'h2') {
                 return (
-                  <h2 key={idx} className='text-xl md:text-2xl font-extrabold mt-8'>
+                  <h2
+                    key={idx}
+                    className='text-xl md:text-2xl font-extrabold mt-8'
+                  >
                     {block.text}
                   </h2>
                 );
               }
               if (block.type === 'h3') {
                 return (
-                  <h3 key={idx} className='text-lg md:text-xl font-extrabold mt-6'>
+                  <h3
+                    key={idx}
+                    className='text-lg md:text-xl font-extrabold mt-6'
+                  >
                     {block.text}
                   </h3>
                 );
               }
               if (block.type === 'ul') {
                 return (
-                  <ul key={idx} className='list-disc pl-6 space-y-2 text-gray-700'>
+                  <ul
+                    key={idx}
+                    className='list-disc pl-6 space-y-2 text-gray-300'
+                  >
                     {block.items?.map((it, i) => (
                       <li key={i}>{it}</li>
                     ))}
@@ -83,7 +104,7 @@ export default function BlogDetails() {
                 );
               }
               return (
-                <p key={idx} className='text-gray-700'>
+                <p key={idx} className='text-gray-300'>
                   {block.text}
                 </p>
               );
@@ -91,10 +112,16 @@ export default function BlogDetails() {
           </div>
 
           <div className='mt-10 flex flex-col sm:flex-row gap-3'>
-            <button className='btn btn-primary' onClick={() => navigate('/services')}>
+            <button
+              className='btn btn-primary'
+              onClick={() => navigate('/services')}
+            >
               Browse Services
             </button>
-            <button className='btn btn-outline' onClick={() => navigate('/blogs')}>
+            <button
+              className='btn btn-outline'
+              onClick={() => navigate('/blogs')}
+            >
               Back to Blogs
             </button>
           </div>
@@ -112,12 +139,20 @@ export default function BlogDetails() {
               className='text-left rounded-2xl border border-base-300 bg-base-100 overflow-hidden hover:shadow-md transition'
             >
               <div className='h-36 w-full overflow-hidden'>
-                <img src={b.cover} alt={b.title} className='h-full w-full object-cover' />
+                <img
+                  src={b.cover}
+                  alt={b.title}
+                  className='h-full w-full object-cover'
+                />
               </div>
               <div className='p-5'>
-                <div className='text-xs text-gray-500'>{b.date} • {b.readTime}</div>
+                <div className='text-xs text-gray-500'>
+                  {b.date} • {b.readTime}
+                </div>
                 <div className='mt-2 font-extrabold'>{b.title}</div>
-                <div className='mt-2 text-sm text-gray-500 line-clamp-2'>{b.excerpt}</div>
+                <div className='mt-2 text-sm text-gray-500 line-clamp-2'>
+                  {b.excerpt}
+                </div>
               </div>
             </button>
           ))}
