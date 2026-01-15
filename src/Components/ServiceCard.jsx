@@ -1,104 +1,99 @@
-import { Link, useNavigate } from "react-router";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useContext } from 'react';
+import { useNavigate } from 'react-router';
+import { AuthContext } from '../context/AuthContext';
 
-// export default function ServiceCard({ service }) {
-//   const navigate = useNavigate();
-//   const { user, role } = useContext(AuthContext);
+const money = (n) => `৳${Number(n || 0).toLocaleString('en-BD')}`;
 
-//   const handleBookNow = () => {
-//     if (!user) {
-//       return navigate("/login", {
-//         state: { from: `/services/${service._id}` },
-//       });
-//     }
-//     if (role === "user") {
-//       navigate(`/services/${service._id}`);
-//     }
-//   };
-
-//   return (
-//     <div className="bg-base-300 rounded-lg shadow-md shadow-secondary hover:shadow-secondary-content  overflow-hidden">
-//       <div className="h-44 bg-gray-100 flex items-center justify-center">
-//         <img
-//           src={service.image || "/placeholder-service.jpg"}
-//           alt={service.service_name}
-//           className="object-cover h-44 w-full"
-//         />
-//       </div>
-//       <div className="p-4">
-//         <h3 className="font-semibold text-lg">{service.service_name}</h3>
-//         <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-//           {service.description}
-//         </p>
-
-//         <div className="mt-3 flex items-center justify-between">
-//           <div>
-//             <div className="text-sm text-gray-700 font-medium">
-//               BDT {service.cost}
-//             </div>
-//             <div className="text-xs text-gray-500">{service.unit}</div>
-//           </div>
-
-//           <button
-//             onClick={handleBookNow}
-//             className="text-sm px-3 py-1 border rounded-md hover:bg-gray-50"
-//           >
-//             {user && role === "user" ? "View & Book" : "View"}
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 export default function ServiceCard({ service }) {
   const navigate = useNavigate();
   const { user, role } = useContext(AuthContext);
 
-  const handleBookNow = () => {
-    // if (!user) {
-    //   return navigate("/login", {
-    //     state: { from: `/services/${service._id}` },
-    //   });
-    // }
-    navigate(`/services/${service._id}`);
+  const {
+    _id,
+    service_name,
+    description,
+    coverImage,
+    image,
+    basePrice,
+    cost,
+    unit,
+    service_category,
+    tags = [],
+    isFeatured,
+    slug,
+  } = service;
+
+  const handleView = () => {
+    navigate(`/services/${slug || _id}`);
   };
 
   return (
-    <div className="bg-base-300 rounded-xl shadow hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col">
-      <div className="h-48 overflow-hidden">
+    <div
+      className={`group relative bg-base-100 rounded-2xl border border-base-300 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col`}
+    >
+      {/* Featured badge */}
+      {isFeatured && (
+        <div className='absolute top-3 left-3 z-10 badge badge-secondary badge-sm font-semibold'>
+          Featured
+        </div>
+      )}
+
+      {/* Image */}
+      <div className='relative h-48 overflow-hidden'>
         <img
-          src={service.image || "/placeholder-service.jpg"}
-          alt={service.service_name}
-          className="w-full h-full object-cover"
+          src={coverImage || image || '/placeholder-service.jpg'}
+          alt={service_name}
+          className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-105'
         />
+
+        {/* Category pill */}
+        {service_category && (
+          <div className='absolute bottom-3 left-3 badge badge-outline bg-base-100/80 backdrop-blur text-xs capitalize'>
+            {service_category}
+          </div>
+        )}
       </div>
 
-      <div className="p-4 flex flex-col grow">
-        <h3 className="text-lg font-semibold text-accent">
-          {service.service_name}
+      {/* Content */}
+      <div className='p-5 flex flex-col grow'>
+        <h3 className='text-lg font-bold text-base-content leading-snug'>
+          {service_name}
         </h3>
-        <p className="text-sm text-emerald-100 mt-1 line-clamp-2">
-          {service.description}
+
+        <p className='mt-1 text-sm text-base-content/60 line-clamp-2'>
+          {description}
         </p>
 
-        <div className="mt-auto flex items-center justify-between pt-4">
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className='mt-3 flex flex-wrap gap-2'>
+            {tags.slice(0, 3).map((tag) => (
+              <span key={tag} className='badge badge-ghost badge-sm text-xs'>
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className='mt-auto pt-5 flex items-center justify-between'>
           <div>
-            <div className="text-sm font-medium text-gray-300">
-              BDT {service.cost}
+            <div className='text-base font-bold text-primary'>
+              {money(basePrice ?? cost)}
             </div>
-            <div className="text-xs text-gray-500">{service.unit} units</div>
+            <div className='text-xs text-base-content/50'>
+              {unit || 'per service'}
+            </div>
           </div>
 
           <button
-            onClick={handleBookNow}
-            className="text-sm px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary transition-colors"
+            onClick={handleView}
+            className='btn btn-primary btn-sm md:btn-md'
           >
-            {user && role === "user" ? "View & Book" : "View"}
+            {user && role === 'user' ? 'View & Book' : 'View'}
           </button>
         </div>
       </div>
     </div>
   );
 }
-

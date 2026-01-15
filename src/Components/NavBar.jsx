@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import logoImg from '../assets/styledecor.png';
 import { AuthContext } from '../context/AuthContext';
 
 import { useLocation } from 'react-router';
@@ -25,11 +26,9 @@ export default function Navbar() {
     ? new Date(user.updatedAt).getTime()
     : '0';
 
-  const avatarSrc =
-    avatarBase.includes('?')
-      ? `${avatarBase}&v=${avatarVersion}`
-      : `${avatarBase}?v=${avatarVersion}`;
-
+  const avatarSrc = avatarBase.includes('?')
+    ? `${avatarBase}&v=${avatarVersion}`
+    : `${avatarBase}?v=${avatarVersion}`;
 
   const handleLogout = async () => {
     await logOut();
@@ -76,8 +75,17 @@ export default function Navbar() {
         </div>
 
         {/* Brand */}
-        <Link to='/' className='btn btn-ghost text-xl'>
-          StyleDecor
+        <Link to='/' className='btn btn-ghost px-2'>
+          <div className='flex items-center gap-2'>
+            <img
+              src={logoImg}
+              alt='StyleDecor logo'
+              className='w-10 h-10 object-contain'
+            />
+            <span className='text-xl font-extrabold tracking-tight'>
+              Style<span className='text-primary'>Decor</span>
+            </span>
+          </div>
         </Link>
       </div>
 
@@ -110,12 +118,12 @@ export default function Navbar() {
               className='flex items-center gap-2 cursor-pointer'
             >
               <img
-                key={avatarSrc}               
+                key={avatarSrc}
                 src={avatarSrc}
                 onError={(e) => {
                   e.currentTarget.src = '/default-avatar.png';
                 }}
-                className="w-9 h-9 rounded-full border object-cover"
+                className='w-9 h-9 rounded-full border object-cover'
               />
 
               <span className='text-sm hidden md:block'>

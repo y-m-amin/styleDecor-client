@@ -914,12 +914,12 @@ export default function Home() {
                     >
                       Explore Services
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => navigate('/decorators')}
                       className='btn btn-outline md:btn-lg'
                     >
                       Find Decorators
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 

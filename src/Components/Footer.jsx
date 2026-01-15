@@ -1,6 +1,6 @@
 import { FaFacebookSquare, FaLinkedin } from 'react-icons/fa';
 import { IoLogoInstagram } from 'react-icons/io5';
-
+import logoImg from '../assets/styledecor.png';
 
 export default function Footer() {
   return (
@@ -8,7 +8,16 @@ export default function Footer() {
       <div className='container mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8'>
         {/* Brand */}
         <div>
-          <h4 className='text-lg font-semibold'>StyleDecor</h4>
+          <div className='flex items-center gap-2'>
+            <img
+              src={logoImg}
+              alt='StyleDecor logo'
+              className='w-30 h-30 object-contain'
+            />
+            <span className='text-xl font-extrabold tracking-tight'>
+              Style<span className='text-primary'>Decor</span>
+            </span>
+          </div>
           <p className='text-sm opacity-70 mt-2'>
             Transforming spaces for weddings, homes, offices, and special events
             with creativity and care.
@@ -35,10 +44,16 @@ export default function Footer() {
             >
               <FaFacebookSquare />
             </a>
-            <a href='https://www.instagram.com' className='hover:text-primary text-2xl'>
+            <a
+              href='https://www.instagram.com'
+              className='hover:text-primary text-2xl'
+            >
               <IoLogoInstagram />
             </a>
-            <a href='https://www.linkedin.com/' className='hover:text-primary text-2xl'>
+            <a
+              href='https://www.linkedin.com/'
+              className='hover:text-primary text-2xl'
+            >
               <FaLinkedin />
             </a>
           </div>
