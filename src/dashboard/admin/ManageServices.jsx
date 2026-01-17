@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from '../../api/axios';
 
@@ -12,12 +12,24 @@ const csvToArray = (s) =>
     .map((x) => x.trim())
     .filter(Boolean);
 
+// const handleDemoAdminError = (err) => {
+//   if (err?.response?.status === 403) {
+//     toast.warning(
+//       err.response?.data?.message || 'Demo account: this action is disabled.',
+//       { autoClose: 3000 }
+//     );
+//     return true; // handled
+//   }
+//   return false;
+// };
+
 export default function ManageServices() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [modalType, setModalType] = useState(null); // 'add' | 'edit' | null
   const [selectedService, setSelectedService] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null); // service to delete
 
   const [totalServices, setTotalServices] = useState(0);
 
@@ -66,7 +78,7 @@ export default function ManageServices() {
   const watchedFile = watch('imageFile');
 
   /** FETCH SERVICES **/
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axios.get(`/services?page=${page}&limit=${limit}`);
@@ -78,11 +90,11 @@ export default function ManageServices() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, limit]);
 
   useEffect(() => {
     fetchServices();
-  }, [page]);
+  }, [fetchServices]);
 
   const closeModal = () => {
     setModalType(null);
@@ -157,6 +169,8 @@ export default function ManageServices() {
       await fetchServices();
       closeModal();
     } catch (err) {
+      //if (handleDemoAdminError(err)) return;
+      //toast.error('Something went wrong. Please try again.');
       console.error(err);
     }
   };
@@ -178,7 +192,10 @@ export default function ManageServices() {
     setValue('status', service.status ?? 'active');
     setValue('isFeatured', Boolean(service.isFeatured));
     setValue('durationHours', service.durationHours ?? '');
-    setValue('availableModes', toCSV(service.availableModes || ['offline', 'online']));
+    setValue(
+      'availableModes',
+      toCSV(service.availableModes || ['offline', 'online'])
+    );
     setValue('coverageAreas', toCSV(service.coverageAreas || []));
     setValue('tags', toCSV(service.tags || []));
     setValue('includes', toCSV(service.includes || []));
@@ -190,10 +207,21 @@ export default function ManageServices() {
     setModalType('edit');
   };
 
-  const onDelete = async (id) => {
-    if (!confirm('Delete this service?')) return;
-    await axios.delete(`/services/${id}`);
-    fetchServices();
+  const onDelete = (service) => {
+    setDeleteTarget(service);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget?._id) return;
+
+    try {
+      await axios.delete(`/services/${deleteTarget._id}`);
+      fetchServices();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
   /** Derive category options from current page results
@@ -342,7 +370,9 @@ export default function ManageServices() {
         {loading ? (
           <div className='p-6'>Loading services...</div>
         ) : filteredServices.length === 0 ? (
-          <div className='p-8 text-center text-gray-500'>No services found.</div>
+          <div className='p-8 text-center text-gray-500'>
+            No services found.
+          </div>
         ) : (
           <div className='divide-y divide-base-300'>
             {filteredServices.map((s) => {
@@ -390,24 +420,31 @@ export default function ManageServices() {
                   </div>
 
                   <div className='md:col-span-3'>
-                    <div className='text-sm font-semibold'>{na(s.service_category)}</div>
+                    <div className='text-sm font-semibold'>
+                      {na(s.service_category)}
+                    </div>
                     <div className='text-xs text-gray-500 mt-1'>
                       slug: {na(s.service_category_slug)}
                     </div>
                   </div>
 
                   <div className='md:col-span-2'>
-                    <div className='text-sm font-extrabold'>{formatBDT(price)}</div>
+                    <div className='text-sm font-extrabold'>
+                      {formatBDT(price)}
+                    </div>
                     <div className='text-xs text-gray-500'>{na(s.unit)}</div>
                   </div>
 
                   <div className='md:col-span-2 flex md:justify-end gap-2'>
-                    <button className='btn btn-sm btn-outline' onClick={() => onEdit(s)}>
+                    <button
+                      className='btn btn-sm btn-outline'
+                      onClick={() => onEdit(s)}
+                    >
                       Edit
                     </button>
                     <button
                       className='btn btn-sm btn-error text-white'
-                      onClick={() => onDelete(s._id)}
+                      onClick={() => onDelete(s)}
                     >
                       Delete
                     </button>
@@ -459,7 +496,8 @@ export default function ManageServices() {
                   {modalType === 'add' ? 'Add New Service' : 'Edit Service'}
                 </h2>
                 <p className='text-sm text-gray-500 mt-1'>
-                  Fields like gallery/tags are optional. Old services won’t break.
+                  Fields like gallery/tags are optional. Old services won’t
+                  break.
                 </p>
               </div>
 
@@ -472,7 +510,9 @@ export default function ManageServices() {
               {/* Basic */}
               <div className='grid md:grid-cols-2 gap-4'>
                 <div>
-                  <label className='text-sm font-semibold'>Service Name *</label>
+                  <label className='text-sm font-semibold'>
+                    Service Name *
+                  </label>
                   <input
                     className='input input-bordered w-full mt-1'
                     placeholder='e.g. Anniversary Decoration'
@@ -521,7 +561,9 @@ export default function ManageServices() {
               {/* Media */}
               <div className='grid md:grid-cols-2 gap-4'>
                 <div>
-                  <label className='text-sm font-semibold'>Cover Image URL</label>
+                  <label className='text-sm font-semibold'>
+                    Cover Image URL
+                  </label>
                   <input
                     className='input input-bordered w-full mt-1'
                     placeholder='https://...'
@@ -540,7 +582,9 @@ export default function ManageServices() {
                     {...register('imageFile')}
                   />
                   <div className='text-xs text-gray-500 mt-1'>
-                    {watchedFile?.length ? 'Selected file ready to upload.' : 'Optional.'}
+                    {watchedFile?.length
+                      ? 'Selected file ready to upload.'
+                      : 'Optional.'}
                   </div>
                 </div>
               </div>
@@ -549,7 +593,10 @@ export default function ManageServices() {
               <div className='grid md:grid-cols-3 gap-4'>
                 <div>
                   <label className='text-sm font-semibold'>Status</label>
-                  <select className='select select-bordered w-full mt-1' {...register('status')}>
+                  <select
+                    className='select select-bordered w-full mt-1'
+                    {...register('status')}
+                  >
                     <option value='active'>active</option>
                     <option value='inactive'>inactive</option>
                     <option value='draft'>draft</option>
@@ -559,12 +606,18 @@ export default function ManageServices() {
                 <div className='flex items-end gap-3'>
                   <label className='label cursor-pointer gap-3'>
                     <span className='text-sm font-semibold'>Featured</span>
-                    <input type='checkbox' className='toggle' {...register('isFeatured')} />
+                    <input
+                      type='checkbox'
+                      className='toggle'
+                      {...register('isFeatured')}
+                    />
                   </label>
                 </div>
 
                 <div>
-                  <label className='text-sm font-semibold'>Duration Hours</label>
+                  <label className='text-sm font-semibold'>
+                    Duration Hours
+                  </label>
                   <input
                     type='number'
                     className='input input-bordered w-full mt-1'
@@ -576,7 +629,9 @@ export default function ManageServices() {
 
               <div className='grid md:grid-cols-2 gap-4'>
                 <div>
-                  <label className='text-sm font-semibold'>Available Modes (CSV)</label>
+                  <label className='text-sm font-semibold'>
+                    Available Modes (CSV)
+                  </label>
                   <input
                     className='input input-bordered w-full mt-1'
                     placeholder='offline, online'
@@ -585,7 +640,9 @@ export default function ManageServices() {
                 </div>
 
                 <div>
-                  <label className='text-sm font-semibold'>Coverage Areas (CSV)</label>
+                  <label className='text-sm font-semibold'>
+                    Coverage Areas (CSV)
+                  </label>
                   <input
                     className='input input-bordered w-full mt-1'
                     placeholder='Dhaka, Gazipur'
@@ -604,7 +661,9 @@ export default function ManageServices() {
                   />
                 </div>
                 <div>
-                  <label className='text-sm font-semibold'>Gallery URLs (CSV)</label>
+                  <label className='text-sm font-semibold'>
+                    Gallery URLs (CSV)
+                  </label>
                   <input
                     className='input input-bordered w-full mt-1'
                     placeholder='https://img1, https://img2'
@@ -615,7 +674,9 @@ export default function ManageServices() {
 
               <div className='grid md:grid-cols-2 gap-4'>
                 <div>
-                  <label className='text-sm font-semibold'>Includes (CSV)</label>
+                  <label className='text-sm font-semibold'>
+                    Includes (CSV)
+                  </label>
                   <input
                     className='input input-bordered w-full mt-1'
                     placeholder='Backdrop, Lighting, Table decor'
@@ -623,7 +684,9 @@ export default function ManageServices() {
                   />
                 </div>
                 <div>
-                  <label className='text-sm font-semibold'>Excludes (CSV)</label>
+                  <label className='text-sm font-semibold'>
+                    Excludes (CSV)
+                  </label>
                   <input
                     className='input input-bordered w-full mt-1'
                     placeholder='Venue booking, Catering'
@@ -657,7 +720,11 @@ export default function ManageServices() {
 
               {/* Footer */}
               <div className='flex justify-end gap-2 pt-2'>
-                <button type='button' className='btn btn-ghost' onClick={closeModal}>
+                <button
+                  type='button'
+                  className='btn btn-ghost'
+                  onClick={closeModal}
+                >
                   Cancel
                 </button>
                 <button
@@ -672,6 +739,46 @@ export default function ManageServices() {
 
           <form method='dialog' className='modal-backdrop'>
             <button onClick={closeModal}>close</button>
+          </form>
+        </dialog>
+      )}
+      {deleteTarget && (
+        <dialog className='modal modal-open'>
+          <div className='modal-box rounded-3xl border border-base-300'>
+            <h3 className='font-extrabold text-lg text-error'>
+              Confirm Delete
+            </h3>
+
+            <p className='mt-2 text-sm text-gray-500'>
+              Are you sure you want to delete
+              <span className='font-semibold'>
+                {' '}
+                {deleteTarget.service_name}
+              </span>
+              ?
+              <br />
+              This action cannot be undone.
+            </p>
+
+            <div className='modal-action'>
+              <button
+                className='btn btn-ghost'
+                onClick={() => setDeleteTarget(null)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className='btn btn-error text-white'
+                onClick={confirmDelete}
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+
+          <form method='dialog' className='modal-backdrop'>
+            <button onClick={() => setDeleteTarget(null)}>close</button>
           </form>
         </dialog>
       )}

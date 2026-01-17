@@ -68,6 +68,23 @@ export default function Login() {
     }
   };
 
+  const handleDemoAdminLogin = async () => {
+    try {
+      const email = 'admin@demo.com';
+      const password = 'Admin11';
+
+      await signInUser(email, password);
+
+      daisyToast.info('Logged in as Demo Admin (read-only)');
+      setTimeout(
+        () => navigate('/dashboard/admin/analytics', { replace: true }),
+        2000
+      );
+    } catch {
+      daisyToast.error('Demo admin login failed');
+    }
+  };
+
   return (
     <div className='min-h-screen bg-base-200 flex items-center justify-center px-4'>
       <div className='flex w-full max-w-sm lg:max-w-4xl bg-base-100 rounded-xl shadow-xl overflow-hidden'>
@@ -102,6 +119,29 @@ export default function Login() {
           </button>
 
           <div className='divider text-xs'>OR</div>
+          <div className='rounded-xl border border-dashed border-warning/40 bg-warning/10 p-4 mb-4'>
+            <h3 className='text-sm font-bold text-warning mb-1'>
+              Demo Admin Access
+            </h3>
+
+            <p className='text-xs text-base-content/70 mb-3'>
+              For recruiters & reviewers. Limited access — destructive actions
+              disabled.
+            </p>
+
+            <button
+              type='button'
+              onClick={handleDemoAdminLogin}
+              className='btn btn-warning btn-outline w-full'
+            >
+              Login as Demo Admin
+            </button>
+
+            <div className='mt-2 text-[11px] text-base-content/50'>
+              {/* Email: <span className='font-mono'>admin@demo.com</span> <br />
+              Password: <span className='font-mono'>Admin11</span> */}
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
             <div>

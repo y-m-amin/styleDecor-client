@@ -8,26 +8,25 @@ import { AuthContext } from '../../context/AuthContext';
 
 const daisyToast = {
   success: (msg) =>
-    toast(msg, {
+    toast(`✅ ${msg}`, {
       className: 'bg-base-200 text-primary shadow-lg',
       progressClassName: 'bg-success-content/30',
-      icon: '✅',
       theme: 'dark',
     }),
 
   error: (msg) =>
-    toast(msg, {
+    toast(`❌ ${msg}`, {
       className: 'bg-error text-error-content shadow-lg',
       progressClassName: 'bg-error-content/30',
-      icon: '❌',
+
       theme: 'dark',
     }),
 
   info: (msg) =>
-    toast(msg, {
+    toast(`ℹ️ ${msg}`, {
       className: 'bg-info text-info-content shadow-lg',
       progressClassName: 'bg-info-content/30',
-      icon: 'ℹ️',
+
       theme: 'dark',
     }),
 };

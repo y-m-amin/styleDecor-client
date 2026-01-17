@@ -20,11 +20,10 @@ export default function ServiceCard({ service }) {
     service_category,
     tags = [],
     isFeatured,
-    slug,
   } = service;
 
   const handleView = () => {
-    navigate(`/services/${slug || _id}`);
+    navigate(`/services/${service._id}`);
   };
 
   return (

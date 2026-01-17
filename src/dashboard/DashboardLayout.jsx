@@ -1,5 +1,6 @@
-import { useContext, useMemo, useEffect } from 'react';
+import { useContext, useEffect, useMemo } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
+import { ToastContainer } from 'react-toastify';
 import Navbar from '../Components/NavBar';
 import { AuthContext } from '../context/AuthContext';
 
@@ -8,14 +9,14 @@ export default function DashboardLayout() {
   const location = useLocation();
 
   useEffect(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, []);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   /**
    *  dashboard navigation
    */
   const navConfig = useMemo(() => {
-    if (role === 'admin') {
+    if (role === 'admin' || role === 'admin_demo') {
       return {
         title: 'Admin Menu',
         links: [
@@ -132,6 +133,16 @@ export default function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+      <ToastContainer
+        autoClose={5000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        theme='dark'
+      />
     </div>
   );
 }

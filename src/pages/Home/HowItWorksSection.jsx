@@ -323,12 +323,12 @@ export default function HowItWorksSection() {
                       >
                         Start Booking
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => navigate('/decorators')}
                         className='btn btn-outline btn-sm md:btn-md'
                       >
                         Browse Decorators
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>

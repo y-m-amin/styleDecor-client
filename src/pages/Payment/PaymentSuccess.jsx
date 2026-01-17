@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useReactToPrint } from 'react-to-print';
 import axios from '../../api/axios';
+import logoImg from '../../assets/styledecor.png';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -11,6 +12,8 @@ export default function PaymentSuccess() {
 
   const [loading, setLoading] = useState(true);
   const [payment, setPayment] = useState(null);
+  const [animationComplete, setAnimationComplete] = useState(false);
+
   const receiptRef = useRef();
 
   useEffect(() => {
@@ -18,12 +21,11 @@ export default function PaymentSuccess() {
 
     const verifyAndFetch = async () => {
       try {
-        // verify payment
+        // Verify payment
         await axios.patch(`/payment-success?session_id=${session_id}`);
 
-        // fetch latest payment by session id
+        // Fetch payment + booking together
         const res = await axios.get(`/payments/by-session/${session_id}`);
-
         setPayment(res.data);
       } catch (err) {
         console.error('Payment verification failed', err);
@@ -53,41 +55,62 @@ export default function PaymentSuccess() {
     );
   }
 
+  const serviceName =
+    payment.booking?.serviceSnapshot?.service_name || 'Service';
+  const location = payment.booking?.location || 'Location not provided';
+
   return (
     <div className='p-4 sm:p-6 max-w-2xl mx-auto'>
-      {/* Receipt */}
       <motion.div
-        ref={receiptRef}
+        ref={receiptRef} // <-- ref directly on motion div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
+        onAnimationComplete={() => setAnimationComplete(true)}
         className='bg-base-200 border rounded-xl p-6 shadow'
       >
-        <h1 className='text-2xl font-bold text-green-600 mb-1'>
-          Payment Receipt
-        </h1>
-        <p className='text-sm text-gray-300 mb-6'>Transaction successful</p>
+        {/* Logo */}
+        <div className='text-center mb-4'>
+          <img
+            src={logoImg}
+            alt='StyleDecor logo'
+            className='w-12 h-12 mx-auto'
+          />
+          <h1 className='text-2xl font-bold tracking-tight'>
+            Style<span className='text-primary'>Decor</span>
+          </h1>
+          <p className='text-sm text-base-content/60'>
+            Making every space beautiful
+          </p>
+        </div>
 
+        <hr className='mb-4' />
+
+        {/* Payment Info */}
         <div className='space-y-2 text-sm'>
           <Row label='Booking Ref' value={payment.bookingRef} />
-          <Row label='Service' value={payment.serviceName} />
+          <Row label='Service' value={serviceName} />
+          <Row label='Location' value={location} />
+          <Row label='Amount Paid' value={`৳${payment.amount}`} />
           <Row
             label='Paid On'
             value={new Date(payment.paidAt).toLocaleString()}
           />
-          <Row label='Payment Method' value='Online' />
+          <Row label='Payment Status' value='Paid' />
         </div>
 
         <hr className='my-4' />
-
-        <div className='flex justify-between items-center text-lg font-semibold'>
-          <span>Total Paid</span>
-          <span>৳{payment.amount}</span>
-        </div>
+        <p className='text-xs text-gray-400'>
+          Transaction ID: {payment.transactionId || '—'}
+        </p>
       </motion.div>
 
       {/* Actions */}
-      <div className='mt-6 flex flex-wrap gap-3 justify-center'>
-        <button onClick={handlePrint} className='btn btn-outline'>
+      <div className='mt-6 flex gap-3 justify-center'>
+        <button
+          onClick={handlePrint}
+          className='btn btn-outline'
+          disabled={!payment || !animationComplete}
+        >
           Download / Print
         </button>
 
@@ -104,9 +127,9 @@ export default function PaymentSuccess() {
 
 function Row({ label, value }) {
   return (
-    <div className='flex justify-between gap-2'>
+    <div className='flex justify-between'>
       <span className='text-gray-500'>{label}</span>
-      <span className='font-medium text-right'>{value}</span>
+      <span className='font-medium'>{value}</span>
     </div>
   );
 }

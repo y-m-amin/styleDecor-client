@@ -143,6 +143,11 @@ export default function Navbar() {
                   <Link to='/dashboard/admin/analytics'>Admin Panel</Link>
                 </li>
               )}
+              {role === 'admin_demo' && (
+                <li>
+                  <Link to='/dashboard/admin/analytics'>Admin Panel</Link>
+                </li>
+              )}
 
               {role === 'decorator' && (
                 <li>
