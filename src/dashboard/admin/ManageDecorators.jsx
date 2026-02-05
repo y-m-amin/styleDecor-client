@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from '../../api/axios';
 
 export default function ManageDecorators() {
@@ -7,7 +8,7 @@ export default function ManageDecorators() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
 
-  const fetchDecorators = async () => {
+  const fetchDecorators = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -21,11 +22,11 @@ export default function ManageDecorators() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [status]);
 
   useEffect(() => {
     fetchDecorators();
-  }, [status]);
+  }, [fetchDecorators]);
 
   const handleStatusChange = async (id, newStatus) => {
     try {

@@ -11,9 +11,9 @@ export default function AdminRoute({ children }) {
         <Spinner />
       </div>
     );
-  if (!user || role !== 'admin') {
-  return <Navigate to="/forbidden" replace />;
-}
+  if (!user || !['admin', 'admin_demo'].includes(role)) {
+    return <Navigate to='/forbidden' replace />;
+  }
 
   return children;
 }

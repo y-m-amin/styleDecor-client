@@ -107,9 +107,13 @@ const PaymentHistory = () => {
                       </p>
 
                       <p className='text-sm text-gray-500'>
-                        {typeof booking.location === 'object'
-                          ? `${booking.location.city}, ${booking.location.country}`
-                          : booking.location}
+                        {booking?.location
+                          ? typeof booking.location === 'object'
+                            ? `${booking.location.city || 'N/A'}, ${
+                                booking.location.country || 'N/A'
+                              }`
+                            : booking.location
+                          : 'Location not provided'}
                       </p>
                     </>
                   )}

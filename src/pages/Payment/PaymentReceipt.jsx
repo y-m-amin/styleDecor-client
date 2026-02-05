@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useReactToPrint } from 'react-to-print';
 import axios from '../../api/axios';
+import logoImg from '../../assets/styledecor.png';
 
 export default function PaymentReceipt() {
   const { paymentId } = useParams();
@@ -46,7 +47,6 @@ export default function PaymentReceipt() {
 
   return (
     <div className='p-4 sm:p-6 max-w-2xl mx-auto'>
-      {/* IMPORTANT: plain div for printing */}
       <div ref={receiptRef}>
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -55,13 +55,27 @@ export default function PaymentReceipt() {
         >
           {/* ===== HEADER ===== */}
           <div className='text-center mb-6'>
-            <div className='text-3xl mb-1'>🎨</div>
-            <h1 className='text-2xl font-bold'>Style Decor</h1>
-            <p className='text-sm text-gray-500'>
+            {/* Logo */}
+            <div className='flex justify-center mb-2'>
+              <img
+                src={logoImg}
+                alt='StyleDecor logo'
+                className='w-12 h-12 object-contain'
+              />
+            </div>
+
+            {/* Brand name */}
+            <h1 className='text-2xl font-extrabold tracking-tight'>
+              Style<span className='text-primary'>Decor</span>
+            </h1>
+
+            {/* Tagline */}
+            <p className='text-sm text-base-content/60'>
               Making every space beautiful
             </p>
 
-            <p className='mt-2 text-xs text-gray-400'>
+            {/* Address */}
+            <p className='mt-2 text-xs text-base-content/40 leading-relaxed'>
               StyleDecor Corporate Office
               <br />
               Road 12, Gulshan-2, Dhaka 1212

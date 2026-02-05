@@ -1,10 +1,9 @@
+import { updateProfile } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
-import axios from '../../api/axios';
 import { toast } from 'react-toastify';
-import { updateProfile } from 'firebase/auth';
-import { auth } from '../../firebase/firebase.init'; 
-
+import axios from '../../api/axios';
+import { auth } from '../../firebase/firebase.init';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/2kRzF5H/user.png';
 
@@ -44,7 +43,6 @@ const MyProfile = () => {
     fetchProfile();
   }, []);
 
-  
   useEffect(() => {
     if (!profile) return;
 
@@ -123,7 +121,8 @@ const MyProfile = () => {
 
   const saveProfile = async () => {
     const displayName = String(form.displayName || '').trim();
-    if (displayName.length < 2) return toast.error('Name must be at least 2 characters');
+    if (displayName.length < 2)
+      return toast.error('Name must be at least 2 characters');
 
     setSaving(true);
     try {
@@ -141,11 +140,11 @@ const MyProfile = () => {
       });
 
       if (auth.currentUser) {
-      await updateProfile(auth.currentUser, { photoURL });
-    }
+        await updateProfile(auth.currentUser, { photoURL });
+      }
 
-    //refresh UI
-    await refreshUser();
+      //refresh UI
+      // await refreshUser();
 
       await fetchProfile();
       setIsEditing(false);
@@ -154,7 +153,11 @@ const MyProfile = () => {
       setPhotoPreview('');
     } catch (err) {
       console.error(err);
-      toast.error(err?.response?.data?.message || err?.message || 'Failed to update profile');
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to update profile'
+      );
     } finally {
       setSaving(false);
     }
@@ -162,11 +165,11 @@ const MyProfile = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center px-4 py-10">
-        <div className="w-full max-w-lg space-y-5 text-center">
-          <Skeleton circle width={112} height={112} className="mx-auto" />
+      <div className='flex justify-center px-4 py-10'>
+        <div className='w-full max-w-lg space-y-5 text-center'>
+          <Skeleton circle width={112} height={112} className='mx-auto' />
           <Skeleton height={40} />
-          <Skeleton height={20} width="70%" className="mx-auto" />
+          <Skeleton height={20} width='70%' className='mx-auto' />
           <Skeleton height={44} />
         </div>
       </div>
@@ -176,48 +179,58 @@ const MyProfile = () => {
   const avatarSrc = photoPreview || profile?.photoURL || DEFAULT_AVATAR;
 
   return (
-    <div className="flex justify-center px-4 py-10">
-      <div className="w-full max-w-lg space-y-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">My Profile</h2>
+    <div className='flex justify-center px-4 py-10'>
+      <div className='w-full max-w-lg space-y-5'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-2xl font-bold'>My Profile</h2>
 
           {!isEditing ? (
-            <button className="btn btn-sm btn-outline" onClick={startEdit}>
+            <button className='btn btn-sm btn-outline' onClick={startEdit}>
               Edit Profile
             </button>
           ) : (
-            <button className="btn btn-sm btn-ghost" onClick={cancelEdit} disabled={saving}>
+            <button
+              className='btn btn-sm btn-ghost'
+              onClick={cancelEdit}
+              disabled={saving}
+            >
               Cancel
             </button>
           )}
         </div>
 
         {/* Header card */}
-        <div className="bg-base-200 rounded-lg p-5 shadow-sm">
-          <div className="flex items-center gap-4">
+        <div className='bg-base-200 rounded-lg p-5 shadow-sm'>
+          <div className='flex items-center gap-4'>
             <img
               src={avatarSrc}
-              className="w-20 h-20 rounded-full object-cover border"
-              alt="profile"
+              className='w-20 h-20 rounded-full object-cover border'
+              alt='profile'
             />
-            <div className="flex-1">
-              <div className="font-semibold text-lg">{profile?.displayName || '—'}</div>
-              <div className="text-sm opacity-70">{profile?.email || '—'}</div>
+            <div className='flex-1'>
+              <div className='font-semibold text-lg'>
+                {profile?.displayName || '—'}
+              </div>
+              <div className='text-sm opacity-70'>{profile?.email || '—'}</div>
             </div>
           </div>
 
           {isEditing && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium mb-1">Update Photo</label>
+            <div className='mt-4'>
+              <label className='block text-sm font-medium mb-1'>
+                Update Photo
+              </label>
               <input
-                type="file"
-                accept="image/*"
-                className="file-input file-input-bordered w-full"
+                type='file'
+                accept='image/*'
+                className='file-input file-input-bordered w-full'
                 onChange={(e) => onPickPhoto(e.target.files?.[0])}
                 disabled={saving}
               />
               {photoFile && (
-                <p className="text-xs opacity-70 mt-1">Selected: {photoFile.name}</p>
+                <p className='text-xs opacity-70 mt-1'>
+                  Selected: {photoFile.name}
+                </p>
               )}
             </div>
           )}
@@ -225,47 +238,57 @@ const MyProfile = () => {
 
         {/* View mode */}
         {!isEditing && (
-          <div className="bg-base-100 rounded-lg p-5 shadow-sm space-y-3">
+          <div className='bg-base-100 rounded-lg p-5 shadow-sm space-y-3'>
             <div>
-              <p className="text-xs opacity-70">Phone</p>
-              <p className="font-medium">{profile?.phone || '—'}</p>
+              <p className='text-xs opacity-70'>Phone</p>
+              <p className='font-medium'>{profile?.phone || '—'}</p>
             </div>
 
             <div>
-              <p className="text-xs opacity-70">Address</p>
-              <p className="font-medium">{profile?.address || '—'}</p>
+              <p className='text-xs opacity-70'>Address</p>
+              <p className='font-medium'>{profile?.address || '—'}</p>
             </div>
           </div>
         )}
 
         {/* Edit mode */}
         {isEditing && (
-          <div className="bg-base-100 rounded-lg p-5 shadow-sm space-y-4">
+          <div className='bg-base-100 rounded-lg p-5 shadow-sm space-y-4'>
             <input
-              className="input input-bordered w-full"
+              className='input input-bordered w-full'
               value={form.displayName}
-              onChange={(e) => setForm((p) => ({ ...p, displayName: e.target.value }))}
-              placeholder="Your name"
+              onChange={(e) =>
+                setForm((p) => ({ ...p, displayName: e.target.value }))
+              }
+              placeholder='Your name'
               disabled={saving}
             />
 
             <input
-              className="input input-bordered w-full"
+              className='input input-bordered w-full'
               value={form.phone}
-              onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-              placeholder="Phone"
+              onChange={(e) =>
+                setForm((p) => ({ ...p, phone: e.target.value }))
+              }
+              placeholder='Phone'
               disabled={saving}
             />
 
             <input
-              className="input input-bordered w-full"
+              className='input input-bordered w-full'
               value={form.address}
-              onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
-              placeholder="Address"
+              onChange={(e) =>
+                setForm((p) => ({ ...p, address: e.target.value }))
+              }
+              placeholder='Address'
               disabled={saving}
             />
 
-            <button onClick={saveProfile} disabled={saving} className="btn btn-primary w-full">
+            <button
+              onClick={saveProfile}
+              disabled={saving}
+              className='btn btn-primary w-full'
+            >
               {saving ? 'Saving...' : 'Save Profile'}
             </button>
           </div>
